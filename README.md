@@ -38,4 +38,13 @@ devops-pipeline-auditor-std/
 └─ README.md
 ```
 
+# DevOps Pipeline Auditor — STD (Tailwind)
 
+Layout **src/** (Next.js 15, App Router, Tailwind) + **api/** (NestJS + Prisma).
+Compose para **dev** e Coolify para **prod**.
+
+## Rodar local
+```bash
+docker compose -f docker-compose.local.yml up -d --build
+# Web: http://localhost:3000
+# API: http://localhost:3001
