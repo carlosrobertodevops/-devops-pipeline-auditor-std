@@ -1,25 +1,32 @@
 {
-  "name": "devops-pipeline-auditor-api",
+  "name": "dpa-backend-std",
+  "version": "1.1.0",
   "private": true,
-  "version": "0.1.0",
   "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
-    "start": "next start -p 3001",
+    "start:dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "build": "nest build",
     "prisma:gen": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:deploy": "prisma migrate deploy",
     "seed": "ts-node scripts/seed.ts"
   },
   "dependencies": {
-    "next": "14.2.5",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "@prisma/client": "5.16.1"
+    "@nestjs/common": "10.3.3",
+    "@nestjs/core": "10.3.3",
+    "@nestjs/platform-express": "10.3.3",
+    "@nestjs/config": "3.1.1",
+    "@prisma/client": "5.16.1",
+    "prisma": "5.16.1",
+    "reflect-metadata": "0.1.13",
+    "cors": "2.8.5",
+    "express": "4.18.2"
   },
   "devDependencies": {
-    "prisma": "5.16.1",
-    "typescript": "5.4.2",
-    "ts-node": "10.9.2"
+    "@nestjs/cli": "10.3.2",
+    "@nestjs/schematics": "10.1.2",
+    "@nestjs/testing": "10.3.3",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.2"
   }
 }
