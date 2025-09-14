@@ -1,0 +1,63 @@
+generator client {
+  datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Org {
+  id         String   @id @default(cuid())
+  name       String
+  externalId String   @unique
+  createdAt  DateTime @default(now())
+  repos      Repo[]
+}
+
+model Repo {
+  id            String     @id @default(cuid())
+  orgId         String
+  org           Org        @relation(fields: [orgId], references: [id])
+  name          String
+  fullName      String     @unique
+  defaultBranch String
+  score         Int?
+  workflows     Workflow[]
+  scans         Scan[]
+  findings      Finding[]
+  createdAt     DateTime   @default(now())
+}
+
+model Workflow {
+  id        String   @id @default(cuid())
+  repoId    String
+  repo      Repo     @relation(fields: [repoId], references: [id])
+  path      String
+  sha       String
+  raw       String
+  createdAt DateTime @default(now())
+}
+
+model Scan {
+  id         String    @id @default(cuid())
+  repoId     String
+  repo       Repo      @relation(fields: [repoId], references: [id])
+  status     String
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  score      Int?
+  findings   Finding[]
+}
+
+model Finding {
+  id         String   @id @default(cuid())
+  repoId     String
+  repo       Repo     @relation(fields: [repoId], references: [id])
+  scanId     String?
+  scan       Scan?    @relation(fields: [scanId], references: [id])
+  rule       String
+  severity   String
+  file       String
+  line       Int
+  suggestion String?
+  createdAt  DateTime @default(now())
+}

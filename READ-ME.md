@@ -3,26 +3,28 @@
 
 ```
 devops-pipeline-auditor-std/
-├─ web/                         # Next.js 14 (App Router) com src/app
-│  ├─ src/app/{dashboard,findings,repositories}/page.tsx
-│  ├─ src/app/{layout.tsx,page.tsx}
-│  ├─ src/lib/api.ts
-│  ├─ src/styles/globals.css
-│  ├─ package.json, tsconfig.json, next.config.mjs, .env.example, Dockerfile
-│
-├─ api/                         # NestJS + Prisma
-│  ├─ src/common/{prisma.service.ts,health.controller.ts}
-│  ├─ src/repos/{repos.module.ts,repos.controller.ts,repos.service.ts}
-│  ├─ src/findings/{findings.module.ts,findings.controller.ts,findings.service.ts}
-│  ├─ src/scans/{scans.module.ts,scans.controller.ts,scans.service.ts}
-│  ├─ src/webhooks/{webhooks.module.ts,webhooks.controller.ts}
-│  ├─ src/{app.module.ts,main.ts}
-│  ├─ prisma/{schema.prisma,seed.ts}
-│  ├─ package.json, tsconfig.json, .env.example, Dockerfile
-│
-├─ docs/                        # Documentação (visão, arquitetura, API, deploy)
-├─ docker-compose.local.yml     # Dev: Postgres + Nest API + Next Web
-├─ docker-compose.coolify.yml   # Prod (Coolify): API + Web
+|─ src/                      # Next.js 15 (src/app)
+│  ├─ app/(routes)/{dashboard,repositories,findings}/page.tsx
+│  ├─ app/layout.tsx
+│  ├─ lib/api.ts
+│  ├─ styles/globals.css
+│  ├─ .env.example
+│  ├─ package.json, tsconfig.json, next.config.mjs, Dockerfile
+├─ api/                      # NestJS + Prisma
+│  ├─ common/{prisma.service.ts,health.controller.ts}
+│  ├─ {app.module.ts, main.ts}
+│  ├─ repos/{repos.module.ts, repos.controller.ts, repos.service.ts}
+│  ├─ findings/{findings.module.ts, findings.controller.ts, findings.service.ts}
+│  ├─ scans/{scans.module.ts, scans.controller.ts, scans.service.ts}
+│  ├─ webhooks/{webhooks.module.ts, webhooks.controller.ts}
+│  ├─ prisma/schema.prisma
+│  ├─ scripts/seed.ts
+│  ├─ .env.example
+│  ├─ package.json, tsconfig.json, nest-cli.json, Dockerfile
+├─ docs/README.md
+├─ docker-compose.local.yml        # dev: db + api + web
+├─ docker-compose.coolify.yml      # Coolify: api + web (DB gerenciado)
 └─ README.md
-
 ```
+
+
