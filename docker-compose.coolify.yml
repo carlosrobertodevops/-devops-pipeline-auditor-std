@@ -1,14 +1,61 @@
-version: "3.9"
+# version: "3.9"
+# services:
+#   api:
+#     build: ./apps/api
+#     environment:
+#       - NODE_ENV=production
+#       - DATABASE_URL=${DATABASE_URL}
+#       - DIRECT_URL=${DIRECT_URL}
+#     command: sh -c "npx prisma migrate deploy && npm start -p 3001"
+#   web:
+#     build: ./apps/web
+#     environment:
+#       - NODE_ENV=production
+#       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+### devops-pipeline-auditor-std/docker-compose.local.yml
 services:
+  db:
+    image: postgres:16
+    container_name: dpa_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   api:
-    build: ./apps/api
+    build: ./api
+    container_name: dpa_api
+    env_file:
+      - ./api/.env
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
-      - DIRECT_URL=${DIRECT_URL}
-    command: sh -c "npx prisma migrate deploy && npm start -p 3001"
+      - DIRECT_URL=${DIRECT_URL
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+
   web:
-    build: ./apps/web
-    environment:
+    build: ./src
+    container_name: dpa_web
+    environment:      
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  db_data:
