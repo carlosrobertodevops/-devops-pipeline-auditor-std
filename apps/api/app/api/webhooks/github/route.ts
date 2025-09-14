@@ -1,0 +1,2 @@
+import { NextResponse } from 'next/server'
+export async function POST(request: Request){ const event = request.headers.get('x-github-event'); const body = await request.json().catch(()=>({})); return NextResponse.json({ ok:true, event, ping: body?.zen || null }) }

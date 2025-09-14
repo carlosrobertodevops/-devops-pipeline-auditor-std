@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  api:
+    build: ./apps/api
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - DIRECT_URL=${DIRECT_URL}
+    command: sh -c "npx prisma migrate deploy && npm start -p 3001"
+  web:
+    build: ./apps/web
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}

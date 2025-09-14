@@ -1,0 +1,25 @@
+{
+  "name": "devops-pipeline-auditor-api",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "prisma:gen": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:deploy": "prisma migrate deploy",
+    "seed": "ts-node scripts/seed.ts"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@prisma/client": "5.16.1"
+  },
+  "devDependencies": {
+    "prisma": "5.16.1",
+    "typescript": "5.4.2",
+    "ts-node": "10.9.2"
+  }
+}
