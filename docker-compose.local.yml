@@ -1,26 +1,81 @@
-version: "3.9"
 services:
   db:
     image: postgres:16
     container_name: dpa_db
-    environment: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres, POSTGRES_DB: postgres }
-    ports: [ "5432:5432" ]
-    volumes: [ "db_data:/var/lib/postgresql/data" ]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - dpa_db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL","pg_isready -U postgres"]
       interval: 5s
       timeout: 3s
       retries: 10
+    networks: [appnet]
+
   api:
-    build: ./apps/api
+    image: node:20-alpine
     container_name: dpa_api
-    env_file: [ ./apps/api/.env ]
-    depends_on: { db: { condition: service_healthy } }
-    ports: [ "3001:3001" ]
+    working_dir: /app
+    volumes:
+      - ./api:/app:cached
+      - dpa_api_node_modules:/app/node_modules
+    env_file:
+      - ./api/.env
+    environment:
+      NODE_ENV: development
+      # Garante conexão local com o serviço db
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+      DIRECT_URL: postgresql://postgres:postgres@db:5432/postgres
+      FRONTEND_URL: http://localhost:3000
+      PORT: 3001
+    command: >
+      sh -lc "
+        npm ci &&
+        npx prisma generate &&
+        npx prisma migrate deploy &&
+        npm run start:dev
+      "
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [appnet]
+
   web:
-    build: ./apps/web
+    image: node:20-alpine
     container_name: dpa_web
-    environment: [ "NEXT_PUBLIC_API_URL=http://localhost:3001/api" ]
-    ports: [ "3000:3000" ]
-    depends_on: [ api ]
-volumes: { db_data: {} }
+    working_dir: /app
+    volumes:
+      - ./src:/app:cached
+      - dpa_web_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:3001
+      # Descomente em WSL2/VMs se o watcher não detectar mudanças:
+      # CHOKIDAR_USEPOLLING: "true"
+    command: >
+      sh -lc "
+        npm ci &&
+        npm run dev
+      "
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+    networks: [appnet]
+
+volumes:
+  dpa_db_data:
+  dpa_api_node_modules:
+  dpa_web_node_modules:
+
+networks:
+  appnet:
