@@ -21,40 +21,56 @@ Monorepo organizado com **frontend** em Next.js 15 (App Router + Tailwind) e **b
 
 ```
 devops-pipeline-auditor-std/
-├─ src/                      # Next.js 15 (src/app)
-│  ├─ app/(routes)/dashboard/page.tsx
-│  ├─ app/(routes)/repositories/page.tsx
-│  ├─ app/(routes)/findings/page.tsx
-│  ├─ app/layout.tsx
-│  ├─ app/page.tsx
-│  ├─ lib/api.ts
-│  ├─ styles/globals.css
-│  ├─ .env.example
-│  ├─ package.json
-│  ├─ tsconfig.json
-│  ├─ next.config.mjs
-│  └─ Dockerfile
-├─ api/                      # NestJS + Prisma
-│  ├─ common/prisma.service.ts
-│  ├─ common/health.controller.ts
-│  ├─ app.module.ts
-│  ├─ main.ts
-│  ├─ repos/{repos.module.ts, repos.controller.ts, repos.service.ts}
-│  ├─ findings/{findings.module.ts, findings.controller.ts, findings.service.ts}
-│  ├─ scans/{scans.module.ts, scans.controller.ts, scans.service.ts}
-│  ├─ webhooks/{webhooks.module.ts, webhooks.controller.ts}
-│  ├─ prisma/schema.prisma
-│  ├─ scripts/seed.ts
-│  ├─ .env.example
-│  ├─ package.json
-│  ├─ tsconfig.json
-│  ├─ nest-cli.json
-│  └─ Dockerfile
-├─ docs/README.md
-├─ docker-compose.local.yml        # dev: db + api + web
-├─ docker-compose.coolify.yml      # Coolify: api + web (DB gerenciado)
-└─ README.md
-```
+├── src/
+│   ├── app/
+│   │   ├── (routes)/
+│   │   │   ├── dashboard/page.tsx
+│   │   │   ├── repositories/page.tsx
+│   │   │   └── findings/page.tsx
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── lib/api.ts
+│   ├── styles/globals.css
+│   ├── tailwind.config.ts
+│   ├── postcss.config.js
+│   ├── .env.example
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── next.config.mjs
+│   └── Dockerfile
+├── api/
+│   ├── common/
+│   │   ├── prisma.service.ts
+│   │   └── health.controller.ts
+│   ├── repos/
+│   │   ├── repos.module.ts
+│   │   ├── repos.controller.ts
+│   │   └── repos.service.ts
+│   ├── findings/
+│   │   ├── findings.module.ts
+│   │   ├── findings.controller.ts
+│   │   └── findings.service.ts
+│   ├── scans/
+│   │   ├── scans.module.ts
+│   │   ├── scans.controller.ts
+│   │   └── scans.service.ts
+│   ├── webhooks/
+│   │   ├── webhooks.module.ts
+│   │   └── webhooks.controller.ts
+│   ├── prisma/schema.prisma
+│   ├── scripts/seed.ts
+│   ├── app.module.ts
+│   ├── main.ts
+│   ├── .env.example
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── nest-cli.json
+│   └── Dockerfile
+├── docs/README.md
+├── docker-compose.local.yml
+├── docker-compose.coolify.yml
+├── .gitignore
+└── README.md```
 ---
 
 ## ⚙️ Pré-requisitos
