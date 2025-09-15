@@ -1,3 +1,6 @@
+// api/main.ts
+import './observability/tracing' // <- inicia OpenTelemetry antes de tudo
+
 import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
@@ -10,10 +13,10 @@ import YAML from 'yaml'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
-  // CORS (origens separadas por vírgula)
+  // CORS
   app.use(cors({ origin: (process.env.FRONTEND_URL || '').split(','), credentials: true }))
 
-  // Stripe webhook precisa do raw body
+  // ⚠️ Stripe precisa do raw body nesta rota
   app.use('/webhooks/stripe', express.raw({ type: 'application/json' }))
 
   // Swagger/OpenAPI
@@ -32,29 +35,20 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('docs', app, document)
 
-  // Endpoints para baixar o OpenAPI "vivo"
   const http = app.getHttpAdapter()
   http.get('/openapi.json', (_req: any, res: any) => res.json(document))
-  http.get('/openapi.yaml', (_req: any, res: any) => {
-    res.type('text/yaml').send(YAML.stringify(document))
-  })
+  http.get('/openapi.yaml', (_req: any, res: any) => res.type('text/yaml').send(YAML.stringify(document)))
 
-  // Opcional: gerar arquivos em disco quando variável setada
   if (process.env.GENERATE_OPENAPI === '1') {
-    try {
-      writeFileSync('./openapi.json', JSON.stringify(document, null, 2))
-      writeFileSync('./openapi.yaml', YAML.stringify(document))
-      // eslint-disable-next-line no-console
-      console.log('openapi.json e openapi.yaml gerados na pasta api/')
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('Falha ao gravar openapi.*:', e)
-    }
+    writeFileSync('./openapi.json', JSON.stringify(document, null, 2))
+    writeFileSync('./openapi.yaml', YAML.stringify(document))
+    // eslint-disable-next-line no-console
+    console.log('openapi.json e openapi.yaml gerados.')
   }
 
-  const port = process.env.PORT || 3001
-  await app.listen(port as number)
+  const port = Number(process.env.PORT || 3001)
+  await app.listen(port)
   // eslint-disable-next-line no-console
-  console.log('API listening on', port, '— Swagger UI: /docs  |  OpenAPI: /openapi.json /openapi.yaml')
+  console.log(`API on ${port} — /docs | /openapi.json | /openapi.yaml`)
 }
 bootstrap()

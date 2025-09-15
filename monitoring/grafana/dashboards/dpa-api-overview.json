@@ -1,0 +1,85 @@
+{
+    "id": null,
+    "title": "DPA API Overview",
+    "uid": "dpa-api-overview",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "panels": [
+        {
+            "type": "stat",
+            "title": "API Up",
+            "id": 1,
+            "gridPos": {
+                "x": 0,
+                "y": 0,
+                "w": 4,
+                "h": 5
+            },
+            "targets": [
+                {
+                    "expr": "up{job=\"dpa-api\"}",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "type": "timeSeries",
+            "title": "Requests/s por rota",
+            "id": 2,
+            "gridPos": {
+                "x": 4,
+                "y": 0,
+                "w": 20,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum by(http_route, http_method) (rate(http_server_request_duration_count[1m]))",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "type": "timeSeries",
+            "title": "Latência p95 (s)",
+            "id": 3,
+            "gridPos": {
+                "x": 0,
+                "y": 8,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_bucket[5m])))",
+                    "refId": "A"
+                }
+            ]
+        },
+        {
+            "type": "timeSeries",
+            "title": "Memória (bytes)",
+            "id": 4,
+            "gridPos": {
+                "x": 12,
+                "y": 8,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "expr": "process_runtime_nodejs_memory_heap_used",
+                    "refId": "A"
+                }
+            ]
+        }
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    }
+}

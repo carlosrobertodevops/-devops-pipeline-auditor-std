@@ -1,46 +1,80 @@
-### `devops-pipeline-auditor-std/docker-compose.local.yml`
 services:
   db:
-    image: postgres:16
+    image: postgres:15
     container_name: dpa_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_DB: dpa
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - dpa_pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: dpa_api
+    depends_on:
+      - db
+    env_file:
+      - api/.env
+    environment:
+      # Porta e path do endpoint Prometheus do OpenTelemetry
+      - OTEL_PROMETHEUS_PORT=9464
+      - OTEL_PROMETHEUS_ENDPOINT=/metrics
+    ports:
+      - "3001:3001"
+      - "9464:9464" # métricas
+    # healthcheck apenas como exemplo
     healthcheck:
-      test: ["CMD-SHELL","pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
       timeout: 3s
       retries: 10
 
-  api:
-    build: ./api
-    container_name: dpa_api
-    env_file:
-      - ./api/.env
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "3001:3001"
-
   web:
-    build: ./src
+    build:
+      context: ./src
     container_name: dpa_web
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
-      - NEXT_PUBLIC_API_KEY=dev-demo-apikey   # defina igual ao exibido em GET /auth/me
+    depends_on:
+      - api
+    env_file:
+      - src/.env
     ports:
       - "3000:3000"
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: dpa_prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
     depends_on:
       - api
 
+  grafana:
+    image: grafana/grafana:10.4.9
+    container_name: dpa_grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - dpa_grafana_data:/var/lib/grafana
+    ports:
+      - "3002:3000"
+    depends_on:
+      - prometheus
+
 volumes:
-  db_data:
+  dpa_pgdata:
+  dpa_grafana_data:
