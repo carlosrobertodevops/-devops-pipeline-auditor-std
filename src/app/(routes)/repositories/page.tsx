@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getRepos, triggerScan } from '@/lib/api'
+import { getRepos, triggerScan, createRepo } from '@/lib/api'
 
 type Repo = { id: string; name: string; fullName: string; defaultBranch: string; score?: number }
 
@@ -8,10 +8,14 @@ export default function Repositories(){
   const [repos, setRepos] = useState<Repo[]>([])
   const [loading, setLoad] = useState(true)
   const [msg, setMsg] = useState('')
+  const [newName, setNewName] = useState('')
 
-  useEffect(()=>{
+  const refresh = ()=>{
+    setLoad(true)
     getRepos().then(setRepos).catch(e=>setMsg(String(e))).finally(()=>setLoad(false))
-  },[])
+  }
+
+  useEffect(refresh, [])
 
   const onScan = async(id: string)=>{
     setMsg('Disparando scan...')
@@ -19,9 +23,29 @@ export default function Repositories(){
     catch(e:any){ setMsg(String(e)) }
   }
 
+  const onCreate = async()=>{
+    setMsg('Criando repositório...')
+    try{
+      await createRepo(newName || undefined)
+      setNewName('')
+      setMsg('Repositório criado!')
+      refresh()
+    }catch(e:any){
+      setMsg(String(e))
+    }
+  }
+
   return (
-    <div className="card">
-      <h2 className="text-lg font-semibold mb-2">Repositórios</h2>
+    <div className="card space-y-4">
+      <div className="flex gap-2 items-end">
+        <div>
+          <label className="block text-xs text-slate-400 mb-1">fullName (org/name)</label>
+          <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="demo/repo-xyz" className="px-3 py-2 rounded-lg bg-slate-800 border border-white/10 outline-none" />
+        </div>
+        <button className="btn" onClick={onCreate}>Adicionar</button>
+      </div>
+
+      <h2 className="text-lg font-semibold">Repositórios</h2>
       {loading ? 'Carregando...' : (
         <table className="table">
           <thead>

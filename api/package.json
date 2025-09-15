@@ -9,7 +9,8 @@
     "prisma:gen": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:deploy": "prisma migrate deploy",
-    "seed": "ts-node scripts/seed.ts"
+    "seed": "ts-node scripts/seed.ts",
+    "openapi:gen": "ts-node scripts/generate-openapi.ts"
   },
   "dependencies": {
     "@nestjs/common": "10.3.3",
@@ -20,7 +21,11 @@
     "prisma": "5.16.1",
     "reflect-metadata": "0.1.13",
     "cors": "2.8.5",
-    "express": "4.18.2"
+    "express": "4.18.2",
+    "@nestjs/swagger": "7.3.1",
+    "swagger-ui-express": "5.0.1",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.0"
   },
   "devDependencies": {
     "@nestjs/cli": "10.3.2",

@@ -1,4 +1,4 @@
-# Backend (NestJS + Prisma)
+# Backend (NestJS + Prisma + Stripe)
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
