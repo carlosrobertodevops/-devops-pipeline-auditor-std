@@ -1,1 +1,4 @@
-export default { experimental: { serverActions: true } };
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "."
+}

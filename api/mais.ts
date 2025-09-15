@@ -1,4 +1,3 @@
-
 import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
@@ -26,6 +25,7 @@ async function bootstrap() {
     .addTag('scans')
     .addTag('findings')
     .addTag('billing')
+    .addTag('auth')
     .build()
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('docs', app, document)

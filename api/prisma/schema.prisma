@@ -6,12 +6,27 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Plan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
 model Org {
-  id         String   @id @default(cuid())
-  name       String
-  externalId String   @unique
-  createdAt  DateTime @default(now())
-  repos      Repo[]
+  id                   String   @id @default(cuid())
+  name                 String
+  externalId           String   @unique
+  apiKey               String?  @unique
+  createdAt            DateTime @default(now())
+  repos                Repo[]
+
+  // Billing
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?
+  plan                 Plan     @default(FREE)
+  planStatus           String?
+  currentPeriodEnd     DateTime?
 }
 
 model Repo {

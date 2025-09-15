@@ -1,12 +1,20 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Plan } from '@prisma/client'
+import crypto from 'crypto'
 const prisma = new PrismaClient()
 
 async function main(){
+  const apiKey = crypto.randomBytes(24).toString('hex')
+
   const org = await prisma.org.upsert({
     where: { externalId: 'demo-org' },
     update: {},
-    create: { name: 'Demo Org', externalId: 'demo-org' }
+    create: { name: 'Demo Org', externalId: 'demo-org', plan: Plan.FREE, apiKey }
   })
+
+  // garante apiKey
+  if (!org.apiKey){
+    await prisma.org.update({ where: { id: org.id }, data: { apiKey } })
+  }
 
   const repo = await prisma.repo.upsert({
     where: { fullName: 'demo/example' },
@@ -23,6 +31,10 @@ async function main(){
       ]
     })
   }
+
+  console.log('Seed concluído.')
+  const refreshed = await prisma.org.findUnique({ where: { id: org.id } })
+  console.log('Org:', { id: refreshed?.id, externalId: refreshed?.externalId, apiKey: refreshed?.apiKey, plan: refreshed?.plan })
 }
 
 main().finally(async ()=>{ await prisma.$disconnect() })

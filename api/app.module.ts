@@ -6,9 +6,11 @@ import { ReposModule } from './repos/repos.module'
 import { FindingsModule } from './findings/findings.module'
 import { ScansModule } from './scans/scans.module'
 import { WebhooksModule } from './webhooks/webhooks.module'
+import { BillingModule } from './billing/billing.module'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), ReposModule, FindingsModule, ScansModule, WebhooksModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, ReposModule, FindingsModule, ScansModule, WebhooksModule, BillingModule],
   controllers: [HealthController],
   providers: [PrismaService],
 })

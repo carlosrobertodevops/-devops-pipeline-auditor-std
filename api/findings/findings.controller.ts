@@ -1,4 +1,3 @@
-
 import { Controller, Get, Query } from '@nestjs/common'
 import { FindingsService } from './findings.service'
 import { ApiTags, ApiOperation, ApiOkResponse, ApiQuery } from '@nestjs/swagger'

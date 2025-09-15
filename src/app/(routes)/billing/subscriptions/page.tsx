@@ -1,35 +1,64 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { getSubscription, createPortal } from '@/lib/api'
+import { useState } from 'react'
+import { createCheckout, createPortal } from '@/lib/api'
 
-type Sub = { id:string; name:string; plan:'FREE'|'BASIC'|'PRO'|'ENTERPRISE'; planStatus?:string|null; currentPeriodEnd?:string|null; limits:{maxRepos:number|null}; usage:{repoCount:number} }
+const plans = [
+  { code:'BASIC' as const,       title:'Básico',      price:'R$ 49/mês',   features:['3 repositórios','scans manuais','histórico 7d'] },
+  { code:'PRO' as const,         title:'Profissional',price:'R$ 199/mês',  features:['50 repositórios','scans agendados','webhook','histórico 90d'] },
+  { code:'ENTERPRISE' as const,  title:'Enterprise',  price:'Fale com vendas', features:['Ilimitado','SSO/SCIM (roadmap)','suporte prioritário'] },
+]
 
-export default function SubscriptionPage(){
-  const [sub, setSub] = useState<Sub|null>(null)
+export default function BillingPage(){
   const [msg, setMsg] = useState('')
 
-  useEffect(()=>{
-    getSubscription().then(setSub).catch(e=>setMsg(String(e)))
-  }, [])
+  const goCheckout = async(code: 'BASIC'|'PRO'|'ENTERPRISE')=>{
+    setMsg('Criando sessão de checkout...')
+    try{
+      const { url } = await createCheckout(code)
+      window.location.href = url
+    }catch(e:any){
+      setMsg(String(e))
+    }
+  }
 
   const openPortal = async()=>{
-    setMsg('Abrindo portal...')
-    try{ const { url } = await createPortal(); window.location.href = url }catch(e:any){ setMsg(String(e)) }
+    setMsg('Abrindo portal do cliente...')
+    try{
+      const { url } = await createPortal()
+      window.location.href = url
+    }catch(e:any){
+      setMsg(String(e))
+    }
   }
 
   return (
-    <div className="card">
-      <h2 className="text-lg font-semibold mb-2">Minha assinatura</h2>
-      {!sub ? (msg || 'Carregando...') : (
-        <div className="space-y-2">
-          <p><span className="badge">Plano</span> {sub.plan}</p>
-          <p><span className="badge">Status</span> {sub.planStatus ?? '-'}</p>
-          <p><span className="badge">Renova em</span> {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleString() : '-'}</p>
-          <p><span className="badge">Limite de repositórios</span> {sub.limits.maxRepos ?? 'Ilimitado'} | <span className="badge">Uso</span> {sub.usage.repoCount}</p>
-          <button className="btn mt-2" onClick={openPortal}>Gerenciar assinatura</button>
+    <div className="space-y-6">
+      <div className="card">
+        <h2 className="text-lg font-semibold mb-2">Planos</h2>
+        <p className="text-slate-300 mb-4">Escolha o plano que faz sentido para seu time.</p>
+        <div className="grid md:grid-cols-3 gap-4">
+          {plans.map(p=>(
+            <div key={p.code} className="card">
+              <h3 className="text-base font-semibold">{p.title}</h3>
+              <p className="text-slate-300 mb-2">{p.price}</p>
+              <ul className="text-sm text-slate-300 mb-3 list-disc list-inside">
+                {p.features.map(f=><li key={f}>{f}</li>)}
+              </ul>
+              <button className="btn" onClick={()=>goCheckout(p.code)}>
+                Assinar {p.title}
+              </button>
+            </div>
+          ))}
         </div>
-      )}
-      {msg && <p className="text-slate-400 mt-3">{msg}</p>}
+      </div>
+
+      <div className="card">
+        <h3 className="text-base font-semibold mb-2">Já é cliente?</h3>
+        <p className="text-slate-300 mb-3">Acesse o portal para trocar plano, atualizar cartão e obter notas fiscais.</p>
+        <button className="btn" onClick={openPortal}>Abrir Portal do Cliente</button>
+      </div>
+
+      {msg && <p className="text-slate-400">{msg}</p>}
     </div>
   )
 }

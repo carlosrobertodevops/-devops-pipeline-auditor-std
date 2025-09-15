@@ -1,4 +1,3 @@
-
 import { Controller, Param, Post, UseGuards } from '@nestjs/common'
 import { ScansService } from './scans.service'
 import { PlanGuard } from '../billing/plan.guard'
