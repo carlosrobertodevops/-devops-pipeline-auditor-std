@@ -1,3 +1,21 @@
+# DevOps Pipeline Auditor — STD (Next.js 15 + Tailwind • NestJS + Prisma)
+
+SaaS B2B para **auditar pipelines de CI/CD** (MVP: GitHub Actions), identificar riscos e sugerir correções (ex.: abrir PRs automáticos).  
+Monorepo organizado com **frontend** em Next.js 15 (App Router + Tailwind) e **backend** em NestJS + Prisma + PostgreSQL.
+
+---
+
+## 🧱 Stack
+
+- **Frontend:** Next.js 15 • App Router • **Tailwind CSS**
+- **Backend:** NestJS 10 • Prisma 5 • Express
+- **Banco:** PostgreSQL 16
+- **Infra Dev/Prod:** Docker Compose (ambiente local) e **Coolify** (produção com Compose)
+- **Linguagens:** TypeScript end-to-end
+
+---
+
+## 📂 Estrutura de Pastas
 
 # devops-pipeline-auditor-std
 
@@ -37,30 +55,18 @@ devops-pipeline-auditor-std/
 ├─ docker-compose.coolify.yml      # Coolify: api + web (DB gerenciado)
 └─ README.md
 ```
-# Documentação
+---
 
-## Stack
-- Frontend: Next.js 15 + Tailwind CSS (App Router)
-- Backend: NestJS 10 + Prisma 5
-- DB: PostgreSQL
-- Docker: Compose (dev) e Coolify (prod)
+## ⚙️ Pré-requisitos
 
-## Endpoints
-- GET /health
-- GET /repos
-- POST /scans/:repoId
-- GET /findings?repoId=...
-- POST /webhooks/github
+- **Docker** e **Docker Compose** instalados
+- (Opcional) Node.js **v20**+ caso rode sem Docker
 
-## Entidades (Prisma)
-Org, Repo, Workflow, Scan, Finding.
+---
 
-# DevOps Pipeline Auditor — STD (Tailwind)
-Layout **src/** (Next.js 15, App Router, Tailwind) + **api/** (NestJS + Prisma).
-Compose para **dev** e Coolify para **prod**.
+## 🚀 Subir ambiente de desenvolvimento (Docker)
 
-## Rodar local
+1) **Copie** os exemplos de ambiente:
 ```bash
-docker compose -f docker-compose.local.yml up -d --build
-# Web: http://localhost:3000
-# API: http://localhost:3001
+cp src/.env.example src/.env
+cp api/.env.example api/.env
