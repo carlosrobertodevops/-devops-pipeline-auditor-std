@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    // Em Next 15, precisa ser OBJETO (não boolean):
+    // Next 15 exige objeto (não boolean):
     serverActions: {}
   },
   typescript: { ignoreBuildErrors: false },
-  eslint: { ignoreDuringBuilds: true },
+  eslint: { ignoreDuringBuilds: false },
   output: 'standalone'
 }
 

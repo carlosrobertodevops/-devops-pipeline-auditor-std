@@ -9,11 +9,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#0b1220',
+        bg: '#0b1720',
         panel: '#0f172a',
         brand: '#60a5fa',
         muted: '#94a3b8',
-      }
+      },
     },
   },
   plugins: [],
