@@ -1,4 +1,4 @@
-// api/main.ts
+// api/main.ts 
 import './observability/tracing' // <- inicia OpenTelemetry antes de tudo
 
 import 'reflect-metadata'
@@ -30,6 +30,7 @@ async function bootstrap() {
     .addTag('findings')
     .addTag('billing')
     .addTag('auth')
+    .addTag('observability') // <- adicionada
     .build()
 
   const document = SwaggerModule.createDocument(app, config)

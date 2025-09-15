@@ -17,6 +17,8 @@ async function gen(){
     .addTag('scans')
     .addTag('findings')
     .addTag('billing')
+    .addTag('webhooks')
+    .addTag('observability')
     .addTag('auth')
     .build()
 

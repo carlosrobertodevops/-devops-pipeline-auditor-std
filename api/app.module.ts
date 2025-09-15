@@ -8,6 +8,7 @@ import { ScansModule } from './scans/scans.module'
 import { WebhooksModule } from './webhooks/webhooks.module'
 import { BillingModule } from './billing/billing.module'
 import { AuthModule } from './auth/auth.module'
+import { ObservabilityModule } from './observability/observability.module'
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { AuthModule } from './auth/auth.module'
     FindingsModule,
     ScansModule,
     WebhooksModule,
-    BillingModule
+    BillingModule,
+    ObservabilityModule
   ],
   controllers: [HealthController],
   providers: [PrismaService],
