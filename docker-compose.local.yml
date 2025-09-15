@@ -37,6 +37,7 @@ services:
   web:
     build:
       context: ./src
+      dockerfile: Dockerfile
     container_name: dpa_web
     depends_on:
       - api

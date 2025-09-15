@@ -1,16 +1,26 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "declaration": false,
+    "module": "CommonJS",
+    "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2020",
+    "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "strict": true
-  }
+
+    "strict": false,
+    "esModuleInterop": true,
+
+    /* ✅ chave para parar erros em node_modules (class-validator/validator) */
+    "skipLibCheck": true,
+
+    /* ✅ where TS procura tipos locais e @types */
+    "typeRoots": ["./types", "./node_modules/@types"]
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts"]
 }

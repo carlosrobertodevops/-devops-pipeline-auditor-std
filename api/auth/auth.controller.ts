@@ -1,37 +1,49 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common'
-import { PrismaService } from '../common/prisma.service'
-import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
-import crypto from 'crypto'
+import {
+  Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, UseGuards
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { AuthService } from './auth.service'
+import { LoginDto } from './dto/login.dto'
+import { RegisterDto } from './dto/register.dto'
+import { UpdateProfileDto } from './dto/update-profile.dto'
+import { JwtAuthGuard } from './jwt.guard'
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private prisma: PrismaService){}
+  constructor(private readonly auth: AuthService) {}
 
-  @Get('me')
-  @ApiOperation({ summary: 'Dados da organização autenticada por API Key' })
-  @ApiOkResponse({ description: 'Retorna org + apiKey' })
-  async me(@Headers('x-api-key') apiKey?: string){
-    let org = apiKey ? await this.prisma.org.findFirst({ where: { apiKey } }) : null
-    if (!org) {
-      org = await this.prisma.org.findUnique({ where: { externalId: 'demo-org' } })
-    }
-    if (!org) throw new Error('Org não encontrada')
-    return { id: org.id, externalId: org.externalId, name: org.name, plan: org.plan, apiKey: org.apiKey }
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Registrar novo usuário' })
+  @ApiOkResponse({ description: 'Usuário criado + token JWT' })
+  async register(@Body() dto: RegisterDto) {
+    const { user, accessToken } = await this.auth.register(dto)
+    return { user, accessToken }
   }
 
-  @Post('rotate')
-  @ApiOperation({ summary: 'Gera uma nova API Key para a organização' })
-  @ApiOkResponse({ description: 'Retorna a nova apiKey' })
-  async rotate(@Headers('x-api-key') apiKey?: string){
-    let org = apiKey ? await this.prisma.org.findFirst({ where: { apiKey } }) : null
-    if (!org) {
-      // para demo, permitir rodar sem apiKey (gira a da demo-org)
-      org = await this.prisma.org.findUnique({ where: { externalId: 'demo-org' } })
-    }
-    if (!org) throw new Error('Org não encontrada')
-    const newKey = crypto.randomBytes(24).toString('hex')
-    await this.prisma.org.update({ where: { id: org.id }, data: { apiKey: newKey } })
-    return { apiKey: newKey }
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login com email/senha' })
+  @ApiOkResponse({ description: 'Retorna token JWT + dados do usuário' })
+  async login(@Body() dto: LoginDto) {
+    const { user, accessToken } = await this.auth.login(dto)
+    return { user, accessToken }
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obter perfil autenticado' })
+  async me(@Req() req: any) {
+    return this.auth.getProfile(req.user.sub)
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Atualizar perfil (ex.: nome, senha)' })
+  async updateProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {
+    return this.auth.updateProfile(req.user.sub, dto)
   }
 }

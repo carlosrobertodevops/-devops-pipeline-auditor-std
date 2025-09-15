@@ -1,11 +1,11 @@
-// api/main.ts 
+// api/main.ts
 import './observability/tracing' // <- inicia OpenTelemetry antes de tudo
 
 import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import * as cors from 'cors'
-import * as express from 'express'
+import cors from 'cors'
+import express from 'express'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { writeFileSync } from 'fs'
 import YAML from 'yaml'
@@ -13,10 +13,14 @@ import YAML from 'yaml'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
-  // CORS
-  app.use(cors({ origin: (process.env.FRONTEND_URL || '').split(','), credentials: true }))
+  // CORS (usa import default)
+  const origins = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+  app.use(cors({ origin: origins.length ? origins : true, credentials: true }))
 
-  // ⚠️ Stripe precisa do raw body nesta rota
+  // ⚠️ Stripe precisa do raw body nesta rota (usa express default)
   app.use('/webhooks/stripe', express.raw({ type: 'application/json' }))
 
   // Swagger/OpenAPI
@@ -30,7 +34,6 @@ async function bootstrap() {
     .addTag('findings')
     .addTag('billing')
     .addTag('auth')
-    .addTag('observability') // <- adicionada
     .build()
 
   const document = SwaggerModule.createDocument(app, config)

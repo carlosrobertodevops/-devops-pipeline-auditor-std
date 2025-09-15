@@ -16,6 +16,7 @@ Monorepo organizado com **frontend** em Next.js 15 (App Router + Tailwind) e **b
 
 # devops-pipeline-auditor-std
 
+---
 ```
 devops-pipeline-auditor-std/
 ├─ src/
@@ -52,6 +53,7 @@ devops-pipeline-auditor-std/
 ├─ .gitignore
 └─ README.md
 ```
+---
 
 
 ## ⚙️ Pré-requisitos
@@ -63,12 +65,12 @@ devops-pipeline-auditor-std/
 
 1) **Copie** os exemplos de ambiente:
 ---
+---
 ```bash
 cp src/.env.example src/.env
 cp api/.env.example api/.env
 ```
 ---
-
 # Documentação (Billing + Stripe)
 
 Endpoints:

@@ -18,9 +18,7 @@ export const sdk = new NodeSDK({
     [SemanticResourceAttributes.SERVICE_NAME]: 'dpa-api',
     [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
   }),
-  // Prometheus pull-based
   metricReader: prometheusExporter,
-  // Auto-instrumentações úteis (HTTP/Express) + Prisma
   instrumentations: [
     getNodeAutoInstrumentations({
       '@opentelemetry/instrumentation-http': { enabled: true },
