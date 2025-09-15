@@ -17,8 +17,6 @@ function priceIdFromEnv(plan: Plan){
 
 @Injectable()
 export class BillingService {
-  // Deixe o SDK v18 usar a API version "pinned" por ele mesmo (compatível com a política atual da Stripe).
-  // https://docs.stripe.com/api/versioning
   private stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   constructor(private prisma: PrismaService){}
@@ -81,13 +79,14 @@ export class BillingService {
       case 'customer.subscription.created':
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription
-        const customerId = sub.customer as string
+        // Em alguns snapshots de tipos, current_period_end pode não estar no d.ts.
+        const cpe = (sub as any).current_period_end ? new Date((sub as any).current_period_end * 1000) : null
         await this.prisma.org.updateMany({
-          where: { stripeCustomerId: customerId },
+          where: { stripeCustomerId: sub.customer as string },
           data: {
             stripeSubscriptionId: sub.id,
             planStatus: sub.status,
-            currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null
+            currentPeriodEnd: cpe
           }
         })
         break

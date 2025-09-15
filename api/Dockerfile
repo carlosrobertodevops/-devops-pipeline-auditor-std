@@ -2,10 +2,10 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-# Dependências úteis para Prisma no Alpine
+# Dependências úteis para Prisma/Node no Alpine
 RUN apk add --no-cache libc6-compat openssl
 
-# Instala deps com cache
+# Instala dependências com cache
 COPY package.json package-lock.json* ./
 RUN npm ci --no-audit --no-fund || npm i --no-audit --no-fund
 
@@ -13,12 +13,15 @@ RUN npm ci --no-audit --no-fund || npm i --no-audit --no-fund
 FROM deps AS build
 WORKDIR /app
 
-# Copia TODO o código da API (inclui prisma/, src/, tsconfig, etc)
+# Copia TODO o código da API (inclui prisma/, src/, tsconfig, etc.)
 COPY . .
 
 # Debug: liste o diretório prisma e confirme o schema
 RUN echo "Conteúdo de /app/prisma:" && ls -la prisma || true
-RUN test -f ./prisma/schema.prisma && echo "✅ prisma/schema.prisma encontrado" || (echo "❌ prisma/schema.prisma NÃO encontrado. Verifique se a pasta 'prisma/' está no contexto de build." && exit 1)
+
+# Checagens preventivas para falhar cedo com mensagem clara
+RUN test -f ./prisma/schema.prisma && echo "✅ prisma/schema.prisma encontrado" || (echo "❌ prisma/schema.prisma NÃO encontrado." && exit 1)
+RUN test -f ./webhooks/webhooks.module.ts && echo "✅ webhooks/webhooks.module.ts encontrado" || (echo "❌ webhooks/webhooks.module.ts NÃO encontrado." && exit 1)
 
 # Gera client Prisma usando caminho explícito do schema
 RUN npx prisma generate --schema ./prisma/schema.prisma
@@ -32,9 +35,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copia node_modules e artefatos de build
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/prisma ./prisma
+COPY --from=deps  /app/node_modules ./node_modules
+COPY --from=build /app/dist         ./dist
+COPY --from=build /app/prisma       ./prisma
 
 EXPOSE 3001
+# Aplica migrations no start e sobe a API
 CMD sh -c "npx prisma migrate deploy && node dist/main.js"

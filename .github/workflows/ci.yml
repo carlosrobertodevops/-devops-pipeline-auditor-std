@@ -21,12 +21,15 @@
 #           cache-dependency-path: api/package-lock.json
 #       - run: npm ci
 #       - run: npm run prisma:gen || true
-#       - run: npm run build || true
-#       - run: npm run openapi:gen || true
+#       - run: npm run build
+#       # Gera OpenAPI JSON e YAML
+#       - run: npm run openapi:gen
 #       - uses: actions/upload-artifact@v4
 #         with:
-#           name: openapi-json
-#           path: api/openapi.json
+#           name: openapi-bundle
+#           path: |
+#             api/openapi.json
+#             api/openapi.yaml
 
 #   build-web:
 #     runs-on: ubuntu-latest
