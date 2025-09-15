@@ -70,7 +70,8 @@ devops-pipeline-auditor-std/
 ├── docker-compose.local.yml
 ├── docker-compose.coolify.yml
 ├── .gitignore
-└── README.md```
+└── README.md
+```
 ---
 
 ## ⚙️ Pré-requisitos
