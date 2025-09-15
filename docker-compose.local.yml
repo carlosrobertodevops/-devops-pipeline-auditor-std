@@ -71,7 +71,7 @@ services:
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - dpa_grafana_data:/var/lib/grafana
     ports:
-      - "3002:3000"
+      - "3002:3002"
     depends_on:
       - prometheus
 
