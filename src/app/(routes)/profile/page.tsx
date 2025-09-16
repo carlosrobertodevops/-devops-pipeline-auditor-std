@@ -2,119 +2,88 @@
 
 import React, { useEffect, useState } from 'react'
 import { apiMe, apiUpdateProfile, clearToken } from '@/lib/api'
-
-type User = {
-  id: string
-  email: string
-  name?: string | null
-  plan?: string | null
-  planStatus?: string | null
-  currentPeriodEnd?: string | null
-}
+import Link from 'next/link'
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null)
+  const [me, setMe] = useState<{ id: string; email: string; name?: string | null } | null>(null)
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [ok, setOk] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    ;(async () => {
-      try {
-        const me = await apiMe()
-        setUser(me)
-        setName(me?.name || '')
-      } catch (e: any) {
-        setError('Faça login para ver seu perfil.')
-      }
-    })()
+    let alive = true
+    apiMe()
+      .then((u) => {
+        if (alive) {
+          setMe(u)
+          setName(u.name || '')
+        }
+      })
+      .catch((e) => setMsg(e?.message || 'Falha ao carregar perfil'))
+    return () => {
+      alive = false
+    }
   }, [])
 
-  const onSave = async (e: React.FormEvent) => {
+  async function onSave(e: React.FormEvent) {
     e.preventDefault()
-    setSaving(true)
-    setError(null)
-    setOk(null)
+    setMsg(null)
+    setLoading(true)
     try {
       await apiUpdateProfile({ name, password: password || undefined })
-      setOk('Perfil atualizado com sucesso!')
+      setMsg('Perfil atualizado!')
       setPassword('')
-      const me = await apiMe()
-      setUser(me)
     } catch (err: any) {
-      setError(err?.message || 'Erro ao salvar')
+      setMsg(err?.message || 'Erro ao atualizar')
     } finally {
-      setSaving(false)
+      setLoading(false)
     }
   }
 
-  const logout = () => {
+  function onLogout() {
     clearToken()
-    window.location.href = '/auth/login'
+    setMe(null)
+    setMsg('Sessão encerrada.')
   }
 
   return (
-    <div className="container-app">
-      <div className="card max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold m-0">Meu Perfil</h2>
-          <button className="badge" onClick={logout}>Sair</button>
+    <div className="card">
+      <h2 className="text-lg font-semibold mb-4">Perfil</h2>
+
+      {!me ? (
+        <div className="space-y-3">
+          <p className="text-sm text-slate-300">Você não está autenticado.</p>
+          <Link className="btn" href="/auth/login">Ir para o login</Link>
         </div>
+      ) : (
+        <form onSubmit={onSave} className="flex flex-col gap-3">
+          <div className="text-sm text-slate-300">Email: {me.email}</div>
+          <input
+            className="px-3 py-2 rounded bg-white/10 border border-white/10"
+            placeholder="nome"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <input
+            className="px-3 py-2 rounded bg-white/10 border border-white/10"
+            placeholder="nova senha (opcional)"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className="flex items-center gap-3">
+            <button className="btn" disabled={loading}>
+              {loading ? 'Salvando...' : 'Salvar'}
+            </button>
+            <button type="button" className="badge" onClick={onLogout}>
+              Logout
+            </button>
+          </div>
+        </form>
+      )}
 
-        {!user && <p className="text-slate-300">Carregando…</p>}
-
-        {user && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="card">
-                <div className="text-sm text-slate-300">E-mail</div>
-                <div className="font-mono">{user.email}</div>
-              </div>
-              <div className="card">
-                <div className="text-sm text-slate-300">Plano</div>
-                <div className="font-mono">{user.plan || 'BASIC'}</div>
-                <div className="text-xs text-slate-400">Status: {user.planStatus || 'inactive'}</div>
-                {user.currentPeriodEnd && (
-                  <div className="text-xs text-slate-400">
-                    Renovação: {new Date(user.currentPeriodEnd).toLocaleString()}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <form onSubmit={onSave} className="space-y-4">
-              <div>
-                <label className="block text-sm mb-1">Nome</label>
-                <input
-                  className="w-full rounded-lg bg-slate-900 border border-white/10 p-2"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="Seu nome"
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Nova senha (opcional)</label>
-                <input
-                  type="password"
-                  className="w-full rounded-lg bg-slate-900 border border-white/10 p-2"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="Deixe em branco para não alterar"
-                />
-              </div>
-
-              {error && <p className="text-red-400 text-sm">{error}</p>}
-              {ok && <p className="text-emerald-400 text-sm">{ok}</p>}
-
-              <button disabled={saving} className="btn">
-                {saving ? 'Salvando…' : 'Salvar alterações'}
-              </button>
-            </form>
-          </>
-        )}
-      </div>
+      {msg && <p className="mt-3 text-sm text-slate-300">{msg}</p>}
     </div>
   )
 }

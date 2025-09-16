@@ -1,64 +1,35 @@
 'use client'
-import { useState } from 'react'
-import { createCheckout, createPortal } from '@/lib/api'
 
-const plans = [
-  { code:'BASIC' as const,       title:'Básico',      price:'R$ 49/mês',   features:['3 repositórios','scans manuais','histórico 7d'] },
-  { code:'PRO' as const,         title:'Profissional',price:'R$ 199/mês',  features:['50 repositórios','scans agendados','webhook','histórico 90d'] },
-  { code:'ENTERPRISE' as const,  title:'Enterprise',  price:'Fale com vendas', features:['Ilimitado','SSO/SCIM (roadmap)','suporte prioritário'] },
-]
+import React, { useState } from 'react'
+import { createPortal } from '@/lib/api'
 
-export default function BillingPage(){
-  const [msg, setMsg] = useState('')
+export default function SubscriptionsPage() {
+  const [msg, setMsg] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const goCheckout = async(code: 'BASIC'|'PRO'|'ENTERPRISE')=>{
-    setMsg('Criando sessão de checkout...')
-    try{
-      const { url } = await createCheckout(code)
+  async function openPortal() {
+    setMsg(null)
+    setLoading(true)
+    try {
+      const { url } = await createPortal() // `url` é garantido como string no contrato
       window.location.href = url
-    }catch(e:any){
-      setMsg(String(e))
-    }
-  }
-
-  const openPortal = async()=>{
-    setMsg('Abrindo portal do cliente...')
-    try{
-      const { url } = await createPortal()
-      window.location.href = url
-    }catch(e:any){
-      setMsg(String(e))
+    } catch (e: any) {
+      setMsg(String(e?.message || e))
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="card">
-        <h2 className="text-lg font-semibold mb-2">Planos</h2>
-        <p className="text-slate-300 mb-4">Escolha o plano que faz sentido para seu time.</p>
-        <div className="grid md:grid-cols-3 gap-4">
-          {plans.map(p=>(
-            <div key={p.code} className="card">
-              <h3 className="text-base font-semibold">{p.title}</h3>
-              <p className="text-slate-300 mb-2">{p.price}</p>
-              <ul className="text-sm text-slate-300 mb-3 list-disc list-inside">
-                {p.features.map(f=><li key={f}>{f}</li>)}
-              </ul>
-              <button className="btn" onClick={()=>goCheckout(p.code)}>
-                Assinar {p.title}
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="card">
-        <h3 className="text-base font-semibold mb-2">Já é cliente?</h3>
-        <p className="text-slate-300 mb-3">Acesse o portal para trocar plano, atualizar cartão e obter notas fiscais.</p>
-        <button className="btn" onClick={openPortal}>Abrir Portal do Cliente</button>
-      </div>
-
-      {msg && <p className="text-slate-400">{msg}</p>}
+    <div className="card">
+      <h2 className="text-lg font-semibold mb-4">Minhas Assinaturas</h2>
+      <p className="text-sm text-slate-300 mb-3">
+        Gerencie suas formas de pagamento, recibos e plano no portal do cliente.
+      </p>
+      <button className="btn" onClick={openPortal} disabled={loading}>
+        {loading ? 'Abrindo…' : 'Abrir Portal do Cliente'}
+      </button>
+      {msg && <p className="mt-3 text-sm text-slate-300">{msg}</p>}
     </div>
   )
 }

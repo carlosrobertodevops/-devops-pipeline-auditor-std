@@ -11,7 +11,7 @@
     "skipLibCheck": true,
     "strict": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./*"] }
+    "paths": { "@/*":  ["*"] }
   },
   "include": ["next-env.d.ts", "app/**/*.ts", "app/**/*.tsx", "lib/**/*.ts", "lib/**/*.tsx"],
   "exclude": ["node_modules"]

@@ -1,141 +1,159 @@
 // src/lib/api.ts
-// Helper centralizado para chamadas à API (NestJS) com suporte a JWT e respostas 204.
-// Mantém compatibilidade com as telas existentes (billing, dashboard, findings, repositories).
+// Camada única de chamadas ao backend (NestJS).
+// - SSR usa INTERNAL_API_URL (ex.: http://api:3001)
+// - Browser usa NEXT_PUBLIC_API_URL (ex.: http://localhost:3001)
+// - JWT armazenado em localStorage (somente client)
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+type Json = Record<string, any> | Array<any> | null;
 
-type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
+const TOKEN_KEY = 'dpa:token';
+const isServer = typeof window === 'undefined';
 
-/** ====== Token helpers (armazenado em localStorage) ====== */
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('dpa_token')
+function getBaseUrl(): string {
+  if (isServer) {
+    return (
+      process.env.INTERNAL_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'http://api:3001'
+    );
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 }
+
+// ---------------- Token helpers (client only) ----------------
 export function setToken(token: string) {
-  if (typeof window === 'undefined') return
-  localStorage.setItem('dpa_token', token)
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+}
+export function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
 }
 export function clearToken() {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem('dpa_token')
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(TOKEN_KEY);
+  }
 }
 
-/** ====== Request genérico ====== */
+// ---------------- HTTP core ----------------
 async function request<T = any>(
   path: string,
-  method: HttpMethod,
-  body?: any,
-  auth: boolean = false
+  init: RequestInit & { json?: Json } = {},
 ): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (auth) {
-    const token = getToken()
-    if (token) headers['Authorization'] = `Bearer ${token}`
+  const base = getBaseUrl();
+  const url = `${base}${path}`;
+
+  const headers = new Headers(init.headers || {});
+  if (!headers.has('Content-Type') && init.json !== undefined) {
+    headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
+  // Injeta Authorization somente no client
+  const token = getToken();
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const body =
+    init.json !== undefined ? JSON.stringify(init.json) : (init.body as any);
+
+  const res = await fetch(url, {
+    ...init,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body,
     cache: 'no-store',
-  })
-
-  if (res.status === 204) {
-    // sem conteúdo
-    return undefined as unknown as T
-  }
-
-  // tenta parsear JSON; se falhar, retorna texto simples
-  const raw = await res.text().catch(() => '')
-  const parseJSON = () => (raw ? JSON.parse(raw) : (undefined as unknown as T))
+  });
 
   if (!res.ok) {
-    let errMsg = `HTTP ${res.status}`
-    try {
-      const data = parseJSON() as any
-      errMsg = data?.message || data?.error || errMsg
-    } catch {
-      if (raw) errMsg = raw
-    }
-    throw new Error(errMsg)
+    const text = await res.text().catch(() => '');
+    throw new Error(text || res.statusText);
   }
 
-  try {
-    return parseJSON()
-  } catch {
-    // resposta não JSON (ex.: string ou vazio)
-    return raw as unknown as T
+  if (res.status === 204) return null as T;
+
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('application/json')) {
+    return (await res.json()) as T;
   }
+  return (await res.text()) as unknown as T;
 }
 
-/** ====== AUTH ====== */
-export async function apiLogin(email: string, password: string) {
-  return request<{ user: any; accessToken: string }>('/auth/login', 'POST', { email, password })
-}
-export async function apiRegister(email: string, password: string, name?: string) {
-  return request<{ user: any; accessToken: string }>('/auth/register', 'POST', { email, password, name })
-}
-export async function apiMe() {
-  return request<any>('/auth/me', 'GET', undefined, true)
-}
-export async function apiUpdateProfile(data: { name?: string; password?: string }) {
-  return request<any>('/auth/profile', 'PATCH', data, true)
+// ============================ AUTH ============================
+export async function apiLogin(email: string, password: string): Promise<{
+  access_token: string;
+}> {
+  return request('/auth/login', {
+    method: 'POST',
+    json: { email, password },
+  });
 }
 
-/** ====== HEALTH (Dashboard) ====== */
-export async function getHealth() {
-  // HealthController geralmente expõe GET /health
-  return request<{ status: string }>('/health', 'GET')
+export async function apiMe(): Promise<{
+  id: string;
+  email: string;
+  name?: string | null;
+}> {
+  return request('/auth/me', { method: 'GET' });
 }
 
-/** ====== REPOS ====== */
-export type CreateRepoInput = {
-  name: string
-  url?: string
-  provider?: 'github' | 'gitlab' | 'bitbucket' | 'other'
-}
-export async function getRepos() {
-  return request<any[]>('/repos', 'GET', undefined, true)
-}
-export async function createRepo(data: CreateRepoInput) {
-  return request<any>('/repos', 'POST', data, true)
+export async function apiUpdateProfile(payload: {
+  name?: string;
+  password?: string;
+}): Promise<{ success: true }> {
+  return request('/auth/profile', { method: 'PATCH', json: payload });
 }
 
-/** ====== SCANS ====== */
-export async function triggerScan(repoId: string) {
-  // Convencionalmente /scans/:repoId/trigger
-  return request<any>(`/scans/${encodeURIComponent(repoId)}/trigger`, 'POST', {}, true)
+// =========================== BILLING ==========================
+export async function createCheckout(planCode: string): Promise<{
+  url?: string;
+  sessionId?: string;
+}> {
+  return request('/billing/checkout', { method: 'POST', json: { planCode } });
 }
 
-/** ====== FINDINGS ====== */
-export async function getFindings(params?: { repoId?: string }) {
-  const q = params?.repoId ? `?repoId=${encodeURIComponent(params.repoId)}` : ''
-  return request<any[]>(`/findings${q}`, 'GET', undefined, true)
+export async function createPortal(): Promise<{ url: string }> {
+  return request('/billing/portal', { method: 'POST' });
 }
 
-/** ====== BILLING / STRIPE ====== */
-export type PlanCode = 'BASIC' | 'PRO' | 'ENTERPRISE'
-
-export async function createCheckout(plan: PlanCode) {
-  // espera um { url: string } de retorno
-  return request<{ url: string }>('/billing/checkout', 'POST', { plan }, true)
+// =========================== HEALTH ===========================
+export async function getHealth(): Promise<{ status: string }> {
+  return request('/health', { method: 'GET' });
 }
 
-export async function createPortal() {
-  // espera um { url: string } de retorno
-  return request<{ url: string }>('/billing/portal', 'POST', {}, true)
+// ============================ REPOS ===========================
+export type CreateRepoInput = { name: string } | string;
+function normalizeRepoInput(input: CreateRepoInput): { name: string } {
+  return typeof input === 'string' ? { name: input } : input;
+}
+export async function getRepos(): Promise<
+  Array<{ id: string; name: string; createdAt: string }>
+> {
+  return request('/repos', { method: 'GET' });
+}
+export async function createRepo(input: CreateRepoInput): Promise<{
+  id: string;
+  name: string;
+}> {
+  return request('/repos', { method: 'POST', json: normalizeRepoInput(input) });
+}
+export async function triggerScan(repoId: string): Promise<{ ok: true }> {
+  return request(`/scans/${encodeURIComponent(repoId)}`, { method: 'POST' });
 }
 
-export async function getSubscriptions() {
-  return request<any[]>('/billing/subscriptions', 'GET', undefined, true)
-}
-
-/** ====== Observability (opcional no front) ====== */
-export async function getObsInfo() {
-  return request<{ service: string; prometheusExporter: { port: number; endpoint: string; url: string } }>(
-    '/observability/info',
-    'GET',
-    undefined,
-    true
-  )
+// =========================== FINDINGS =========================
+export async function getFindings(): Promise<
+  Array<{
+    id: string;
+    repoId: string;
+    rule: string;
+    severity: 'low' | 'medium' | 'high';
+    createdAt: string;
+  }>
+> {
+  return request('/findings', { method: 'GET' });
 }

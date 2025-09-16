@@ -7,59 +7,55 @@ import { apiLogin, setToken } from '@/lib/api'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [msg, setMsg] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const onSubmit = async (e: React.FormEvent) => {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setMsg(null)
     setLoading(true)
-    setError(null)
     try {
-      const { accessToken } = await apiLogin(email, password)
-      setToken(accessToken)
-      window.location.href = '/dashboard'
+      const { access_token } = await apiLogin(email, password)
+      setToken(access_token)
+      setMsg('Login realizado! Você já pode acessar o Dashboard.')
     } catch (err: any) {
-      setError(err?.message || 'Falha no login')
+      setMsg(err?.message || 'Falha no login')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="container-app">
-      <div className="card max-w-md mx-auto">
-        <h2 className="text-xl font-bold mb-4">Entrar</h2>
-        <form onSubmit={onSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm mb-1">E-mail</label>
-            <input
-              type="email"
-              className="w-full rounded-lg bg-slate-900 border border-white/10 p-2"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Senha</label>
-            <input
-              type="password"
-              className="w-full rounded-lg bg-slate-900 border border-white/10 p-2"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button disabled={loading} className="btn w-full justify-center">
-            {loading ? 'Entrando…' : 'Entrar'}
-          </button>
-        </form>
+    <div className="card">
+      <h2 className="text-lg font-semibold mb-4">Login</h2>
+      <form onSubmit={onSubmit} className="flex flex-col gap-3">
+        <input
+          className="px-3 py-2 rounded bg-white/10 border border-white/10"
+          placeholder="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          className="px-3 py-2 rounded bg-white/10 border border-white/10"
+          placeholder="senha"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button className="btn" disabled={loading}>
+          {loading ? 'Entrando...' : 'Entrar'}
+        </button>
+      </form>
 
-        <p className="text-sm mt-4 text-slate-300">
-          Ainda não tem conta?{' '}
-          <Link href="/billing/subscription" className="nav-link">Assine</Link>
-        </p>
+      {msg && <p className="mt-3 text-sm text-slate-300">{msg}</p>}
+
+      <div className="mt-4 text-sm">
+        <Link className="nav-link" href="/dashboard">
+          Ir para o Dashboard
+        </Link>
       </div>
     </div>
   )
