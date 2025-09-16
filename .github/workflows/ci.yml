@@ -2,46 +2,82 @@
 
 # on:
 #   push:
-#     branches: [ main ]
+#     branches: [main]
 #   pull_request:
-#     branches: [ main ]
 
 # jobs:
-#   build-api:
+#   test:
 #     runs-on: ubuntu-latest
-#     defaults:
-#       run:
-#         working-directory: api
+#     services:
+#       postgres:
+#         image: postgres:16-alpine
+#         env:
+#           POSTGRES_USER: dev
+#           POSTGRES_PASSWORD: dev
+#           POSTGRES_DB: platform
+#         ports:
+#           - 5432:5432
+#         options: >-
+#           --health-cmd="pg_isready -U dev -d platform"
+#           --health-interval=5s
+#           --health-timeout=5s
+#           --health-retries=20
 #     steps:
 #       - uses: actions/checkout@v4
 #       - uses: actions/setup-node@v4
 #         with:
 #           node-version: 20
-#           cache: 'npm'
-#           cache-dependency-path: api/package-lock.json
+#           cache: "npm"
 #       - run: npm ci
-#       - run: npm run prisma:gen || true
-#       - run: npm run build
-#       # Gera OpenAPI JSON e YAML
-#       - run: npm run openapi:gen
-#       - uses: actions/upload-artifact@v4
-#         with:
-#           name: openapi-bundle
-#           path: |
-#             api/openapi.json
-#             api/openapi.yaml
+#       - name: Build (typecheck)
+#         run: npm run build --workspaces=false
+#       - name: Test (all workspaces)
+#         env:
+#           TEST_DATABASE_URL: postgresql://dev:dev@localhost:5432/platform
+#         run: npm test --workspaces --if-present
+# # name: CI
+# # on:
+# #   push:
+# #     branches: [ main ]
+# #   pull_request:
+# #     branches: [ main ]
 
-#   build-web:
-#     runs-on: ubuntu-latest
-#     defaults:
-#       run:
-#         working-directory: src
-#     steps:
-#       - uses: actions/checkout@v4
-#       - uses: actions/setup-node@v4
-#         with:
-#           node-version: 20
-#           cache: 'npm'
-#           cache-dependency-path: src/package-lock.json
-#       - run: npm ci
-#       - run: npm run build
+# # jobs:
+# #   build-api:
+# #     runs-on: ubuntu-latest
+# #     defaults:
+# #       run:
+# #         working-directory: api
+# #     steps:
+# #       - uses: actions/checkout@v4
+# #       - uses: actions/setup-node@v4
+# #         with:
+# #           node-version: 20
+# #           cache: 'npm'
+# #           cache-dependency-path: api/package-lock.json
+# #       - run: npm ci
+# #       - run: npm run prisma:gen || true
+# #       - run: npm run build
+# #       # Gera OpenAPI JSON e YAML
+# #       - run: npm run openapi:gen
+# #       - uses: actions/upload-artifact@v4
+# #         with:
+# #           name: openapi-bundle
+# #           path: |
+# #             api/openapi.json
+# #             api/openapi.yaml
+
+# #   build-web:
+# #     runs-on: ubuntu-latest
+# #     defaults:
+# #       run:
+# #         working-directory: src
+# #     steps:
+# #       - uses: actions/checkout@v4
+# #       - uses: actions/setup-node@v4
+# #         with:
+# #           node-version: 20
+# #           cache: 'npm'
+# #           cache-dependency-path: src/package-lock.json
+# #       - run: npm ci
+# #       - run: npm run build

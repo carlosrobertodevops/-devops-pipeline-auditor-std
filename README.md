@@ -93,25 +93,24 @@ devops-pipeline-auditor-std/
 
 ```
 ---
-
-
 ## ⚙️ Pré-requisitos
 
 - **Docker** e **Docker Compose** instalados
 - (Opcional) Node.js **v20**+ caso rode sem Docker
 
----
-
 ## 🚀 Subir ambiente de desenvolvimento (Docker)
 
+---
 ```
 ├─ docker-compose.local.yml
 ├─ docker-compose.coolify.yml
 ├─ .gitignore
 └─ README.md
 ```
+---
 
 1) **Copie** os exemplos de ambiente:
+---
 ---
 ---
 ```bash
@@ -131,3 +130,24 @@ Variáveis (`api/.env`):
 - STRIPE_PRICE_BASIC, STRIPE_PRICE_PRO, STRIPE_PRICE_ENTERPRISE
 - FRONTEND_URL (lista CORS, separada por vírgula)
 
+# Testes (TDD) – DevOps Pipeline Auditor
+
+Este documento cobre a execução de testes **frontend (Next.js)** e **backend (NestJS + Prisma)**, alinhado ao layout:
+
+---
+
+## 1) Frontend (Next.js)
+
+- Stack: **Jest + Testing Library**
+- Arquivos adicionados:
+  - `src/jest.config.ts`
+  - `src/jest.setup.ts`
+  - `src/__tests__/home.page.test.tsx`
+  - `src/__tests__/lib.api.test.ts`
+- Scripts:
+  ```bash
+  cd src
+  npm i
+  npm test
+  npm run test:watch
+  npm run test:coverage
