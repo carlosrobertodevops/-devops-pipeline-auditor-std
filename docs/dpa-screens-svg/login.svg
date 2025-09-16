@@ -1,0 +1,30 @@
+<svg width="1440" height="1024" viewBox="0 0 1440 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="black" flood-opacity="0.35"/></filter>
+  </defs>
+  <rect width="100%" height="100%" fill="#0b1220"/>
+  <!-- Top Bar -->
+  <rect x="0" y="0" width="1440" height="64" fill="#111827" />
+  <text x="32" y="40" font-size="20" font-weight="700" fill="#e5e7eb" font-family="Inter, ui-sans-serif">DevOps Pipeline Auditor — Login</text>
+  <!-- Nav -->
+  <g transform="translate(360,16)">
+    <rect x="0" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="16" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Dashboard</text><rect x="150" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="166" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Repositórios</text><rect x="300" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="316" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Findings</text><rect x="450" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="466" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Billing</text><rect x="600" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="616" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Perfil</text>
+  </g>
+  <!-- Body container -->
+  <g transform="translate(32,88)">
+
+  <rect x="420" y="120" width="600" height="480" rx="16" fill="#111827" stroke="#1f2937" />
+  <text x="436" y="148" font-size="16" font-weight="700" fill="#e5e7eb" font-family="Inter">Entrar</text>
+  
+
+  <text x="460" y="220" font-size="14" fill="#94a3b8" font-family="Inter">E-mail</text>
+  <rect x="460" y="235" width="520" height="44" rx="10" fill="rgba(255,255,255,0.06)" stroke="#1f2937"/>
+  <text x="460" y="310" font-size="14" fill="#94a3b8" font-family="Inter">Senha</text>
+  <rect x="460" y="325" width="520" height="44" rx="10" fill="rgba(255,255,255,0.06)" stroke="#1f2937"/>
+
+  <rect x="460" y="400" width="92" height="36" rx="10" fill="#22d3ee" />
+  <text x="476" y="424" font-size="14" font-weight="700" fill="#0b1220" font-family="Inter">Entrar</text>
+
+  <text x="460" y="460" font-size="13" fill="#94a3b8" font-family="Inter">Esqueceu a senha?</text>
+</g>
+</svg>

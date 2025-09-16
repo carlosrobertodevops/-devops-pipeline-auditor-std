@@ -1,0 +1,106 @@
+<svg width="1440" height="1024" viewBox="0 0 1440 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="black" flood-opacity="0.35"/></filter>
+  </defs>
+  <rect width="100%" height="100%" fill="#0b1220"/>
+  <!-- Top Bar -->
+  <rect x="0" y="0" width="1440" height="64" fill="#111827" />
+  <text x="32" y="40" font-size="20" font-weight="700" fill="#e5e7eb" font-family="Inter, ui-sans-serif">DevOps Pipeline Auditor — Billing / Planos</text>
+  <!-- Nav -->
+  <g transform="translate(360,16)">
+    <rect x="0" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="16" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Dashboard</text><rect x="150" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="166" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Repositórios</text><rect x="300" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="316" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Findings</text><rect x="450" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="466" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Billing</text><rect x="600" y="0" rx="8" ry="8" width="138" height="32" fill="rgba(255,255,255,0.06)" /><text x="616" y="22" fill="#e5e7eb" font-size="14" font-family="Inter">Perfil</text>
+  </g>
+  <!-- Body container -->
+  <g transform="translate(32,88)">
+
+  <rect x="0" y="0" width="420" height="360" rx="16" fill="#111827" stroke="#1f2937" />
+  <text x="16" y="28" font-size="16" font-weight="700" fill="#e5e7eb" font-family="Inter">Básico</text>
+  <text x="16" y="48" font-size="13" fill="#94a3b8" font-family="Inter">3 repositórios, scans manuais</text>
+
+  <rect x="24" y="300" width="172" height="36" rx="10" fill="#22d3ee" />
+  <text x="40" y="324" font-size="14" font-weight="700" fill="#0b1220" font-family="Inter">Assinar Básico</text>
+
+  <rect x="460" y="0" width="420" height="360" rx="16" fill="#111827" stroke="#1f2937" />
+  <text x="476" y="28" font-size="16" font-weight="700" fill="#e5e7eb" font-family="Inter">Profissional</text>
+  <text x="476" y="48" font-size="13" fill="#94a3b8" font-family="Inter">20 repositórios, scans agendados</text>
+
+  <rect x="484" y="300" width="232" height="36" rx="10" fill="#22d3ee" />
+  <text x="500" y="324" font-size="14" font-weight="700" fill="#0b1220" font-family="Inter">Assinar Profissional</text>
+
+  <rect x="920" y="0" width="420" height="360" rx="16" fill="#111827" stroke="#1f2937" />
+  <text x="936" y="28" font-size="16" font-weight="700" fill="#e5e7eb" font-family="Inter">Enterprise</text>
+  <text x="936" y="48" font-size="13" fill="#94a3b8" font-family="Inter">Ilimitado, SSO, suporte SLA</text>
+
+  <rect x="944" y="300" width="182" height="36" rx="10" fill="rgba(255,255,255,0.08)" />
+  <text x="960" y="324" font-size="14" font-weight="700" fill="#e5e7eb" font-family="Inter">Fale com Vendas</text>
+
+  <rect x="0" y="380" width="1360" height="556" rx="16" fill="#111827" stroke="#1f2937" />
+  <text x="16" y="408" font-size="16" font-weight="700" fill="#e5e7eb" font-family="Inter">Histórico de Faturas</text>
+  
+<rect x="16" y="420" width="1328" height="36" fill="#111827" stroke="#1f2937"/>
+<text x="28" y="444" font-size="12" fill="#94a3b8" font-family="Inter" font-weight="600">Fatura</text>
+<text x="293" y="444" font-size="12" fill="#94a3b8" font-family="Inter" font-weight="600">Plano</text>
+<text x="558" y="444" font-size="12" fill="#94a3b8" font-family="Inter" font-weight="600">Valor</text>
+<text x="823" y="444" font-size="12" fill="#94a3b8" font-family="Inter" font-weight="600">Status</text>
+<text x="1088" y="444" font-size="12" fill="#94a3b8" font-family="Inter" font-weight="600">Data</text>
+<rect x="16" y="456" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="480" font-size="13" fill="#e5e7eb" font-family="Inter">Item 1-1</text>
+<text x="293" y="480" font-size="13" fill="#e5e7eb" font-family="Inter">Item 1-2</text>
+<text x="558" y="480" font-size="13" fill="#e5e7eb" font-family="Inter">Item 1-3</text>
+<text x="823" y="480" font-size="13" fill="#e5e7eb" font-family="Inter">Item 1-4</text>
+<text x="1088" y="480" font-size="13" fill="#e5e7eb" font-family="Inter">Item 1-5</text>
+<rect x="16" y="496" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="520" font-size="13" fill="#e5e7eb" font-family="Inter">Item 2-1</text>
+<text x="293" y="520" font-size="13" fill="#e5e7eb" font-family="Inter">Item 2-2</text>
+<text x="558" y="520" font-size="13" fill="#e5e7eb" font-family="Inter">Item 2-3</text>
+<text x="823" y="520" font-size="13" fill="#e5e7eb" font-family="Inter">Item 2-4</text>
+<text x="1088" y="520" font-size="13" fill="#e5e7eb" font-family="Inter">Item 2-5</text>
+<rect x="16" y="536" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="560" font-size="13" fill="#e5e7eb" font-family="Inter">Item 3-1</text>
+<text x="293" y="560" font-size="13" fill="#e5e7eb" font-family="Inter">Item 3-2</text>
+<text x="558" y="560" font-size="13" fill="#e5e7eb" font-family="Inter">Item 3-3</text>
+<text x="823" y="560" font-size="13" fill="#e5e7eb" font-family="Inter">Item 3-4</text>
+<text x="1088" y="560" font-size="13" fill="#e5e7eb" font-family="Inter">Item 3-5</text>
+<rect x="16" y="576" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="600" font-size="13" fill="#e5e7eb" font-family="Inter">Item 4-1</text>
+<text x="293" y="600" font-size="13" fill="#e5e7eb" font-family="Inter">Item 4-2</text>
+<text x="558" y="600" font-size="13" fill="#e5e7eb" font-family="Inter">Item 4-3</text>
+<text x="823" y="600" font-size="13" fill="#e5e7eb" font-family="Inter">Item 4-4</text>
+<text x="1088" y="600" font-size="13" fill="#e5e7eb" font-family="Inter">Item 4-5</text>
+<rect x="16" y="616" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="640" font-size="13" fill="#e5e7eb" font-family="Inter">Item 5-1</text>
+<text x="293" y="640" font-size="13" fill="#e5e7eb" font-family="Inter">Item 5-2</text>
+<text x="558" y="640" font-size="13" fill="#e5e7eb" font-family="Inter">Item 5-3</text>
+<text x="823" y="640" font-size="13" fill="#e5e7eb" font-family="Inter">Item 5-4</text>
+<text x="1088" y="640" font-size="13" fill="#e5e7eb" font-family="Inter">Item 5-5</text>
+<rect x="16" y="656" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="680" font-size="13" fill="#e5e7eb" font-family="Inter">Item 6-1</text>
+<text x="293" y="680" font-size="13" fill="#e5e7eb" font-family="Inter">Item 6-2</text>
+<text x="558" y="680" font-size="13" fill="#e5e7eb" font-family="Inter">Item 6-3</text>
+<text x="823" y="680" font-size="13" fill="#e5e7eb" font-family="Inter">Item 6-4</text>
+<text x="1088" y="680" font-size="13" fill="#e5e7eb" font-family="Inter">Item 6-5</text>
+<rect x="16" y="696" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="720" font-size="13" fill="#e5e7eb" font-family="Inter">Item 7-1</text>
+<text x="293" y="720" font-size="13" fill="#e5e7eb" font-family="Inter">Item 7-2</text>
+<text x="558" y="720" font-size="13" fill="#e5e7eb" font-family="Inter">Item 7-3</text>
+<text x="823" y="720" font-size="13" fill="#e5e7eb" font-family="Inter">Item 7-4</text>
+<text x="1088" y="720" font-size="13" fill="#e5e7eb" font-family="Inter">Item 7-5</text>
+<rect x="16" y="736" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="760" font-size="13" fill="#e5e7eb" font-family="Inter">Item 8-1</text>
+<text x="293" y="760" font-size="13" fill="#e5e7eb" font-family="Inter">Item 8-2</text>
+<text x="558" y="760" font-size="13" fill="#e5e7eb" font-family="Inter">Item 8-3</text>
+<text x="823" y="760" font-size="13" fill="#e5e7eb" font-family="Inter">Item 8-4</text>
+<text x="1088" y="760" font-size="13" fill="#e5e7eb" font-family="Inter">Item 8-5</text>
+<rect x="16" y="776" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="800" font-size="13" fill="#e5e7eb" font-family="Inter">Item 9-1</text>
+<text x="293" y="800" font-size="13" fill="#e5e7eb" font-family="Inter">Item 9-2</text>
+<text x="558" y="800" font-size="13" fill="#e5e7eb" font-family="Inter">Item 9-3</text>
+<text x="823" y="800" font-size="13" fill="#e5e7eb" font-family="Inter">Item 9-4</text>
+<text x="1088" y="800" font-size="13" fill="#e5e7eb" font-family="Inter">Item 9-5</text>
+<rect x="16" y="816" width="1328" height="40" fill="rgba(255,255,255,0.02)" stroke="#1f2937"/>
+<text x="28" y="840" font-size="13" fill="#e5e7eb" font-family="Inter">Item 10-1</text>
+<text x="293" y="840" font-size="13" fill="#e5e7eb" font-family="Inter">Item 10-2</text>
+<text x="558" y="840" font-size="13" fill="#e5e7eb" font-family="Inter">Item 10-3</text>
+<text x="823" y="840" font-size="13" fill="#e5e7eb" font-family="Inter">Item 10-4</text>
+<text x="1088" y="840" font-size="13" fill="#e5e7eb" font-family="Inter">Item 10-5</text></g>
+</svg>
