@@ -1,159 +1,153 @@
-// src/lib/api.ts
-// Camada única de chamadas ao backend (NestJS).
-// - SSR usa INTERNAL_API_URL (ex.: http://api:3001)
-// - Browser usa NEXT_PUBLIC_API_URL (ex.: http://localhost:3001)
-// - JWT armazenado em localStorage (somente client)
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-type Json = Record<string, any> | Array<any> | null;
+// URL pública da API (definida no docker-compose/local .env)
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') || 'http://localhost:3001';
 
-const TOKEN_KEY = 'dpa:token';
-const isServer = typeof window === 'undefined';
+// ===== Auth storage (token no localStorage) =====
+let _cachedToken: string | null = null;
 
-function getBaseUrl(): string {
-  if (isServer) {
-    return (
-      process.env.INTERNAL_API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      'http://api:3001'
-    );
-  }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+export function setToken(t: string) {
+  _cachedToken = t;
+  if (typeof window !== 'undefined') localStorage.setItem('dpa_token', t);
 }
 
-// ---------------- Token helpers (client only) ----------------
-export function setToken(token: string) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(TOKEN_KEY, token);
-  }
-}
 export function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-export function clearToken() {
+  if (_cachedToken) return _cachedToken;
   if (typeof window !== 'undefined') {
-    localStorage.removeItem(TOKEN_KEY);
+    _cachedToken = localStorage.getItem('dpa_token');
   }
+  return _cachedToken;
 }
 
-// ---------------- HTTP core ----------------
-async function request<T = any>(
+export function clearToken() {
+  _cachedToken = null;
+  if (typeof window !== 'undefined') localStorage.removeItem('dpa_token');
+}
+
+function authHeaders(extra?: HeadersInit): HeadersInit {
+  const t = getToken();
+  return {
+    ...(t ? { Authorization: `Bearer ${t}` } : {}),
+    ...(extra || {}),
+  };
+}
+
+async function api<T = any>(
   path: string,
-  init: RequestInit & { json?: Json } = {},
+  init?: RequestInit & { raw?: boolean }
 ): Promise<T> {
-  const base = getBaseUrl();
-  const url = `${base}${path}`;
-
-  const headers = new Headers(init.headers || {});
-  if (!headers.has('Content-Type') && init.json !== undefined) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  // Injeta Authorization somente no client
-  const token = getToken();
-  if (token && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const body =
-    init.json !== undefined ? JSON.stringify(init.json) : (init.body as any);
-
-  const res = await fetch(url, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...init,
-    headers,
-    body,
-    cache: 'no-store',
+    headers: authHeaders({
+      'Content-Type': 'application/json',
+      ...(init?.headers || {}),
+    }),
   });
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(text || res.statusText);
+    throw new Error(text || `HTTP ${res.status} on ${path}`);
   }
-
-  if (res.status === 204) return null as T;
-
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('application/json')) {
-    return (await res.json()) as T;
-  }
-  return (await res.text()) as unknown as T;
+  // algumas rotas (ex: webhooks) não retornam JSON
+  if (init?.raw) return (undefined as unknown) as T;
+  return (await res.json()) as T;
 }
 
-// ============================ AUTH ============================
+// =================== Tipos ===================
+export type Repo = {
+  id: string;
+  name: string;
+  createdAt: string;
+};
+
+export type Finding = {
+  id: string;
+  repoId: string;
+  rule: string;
+  severity: 'low' | 'medium' | 'high';
+  createdAt: string;
+  // Alguns backends não mandam estes dois — então deixamos opcionais
+  file?: string;
+  line?: number;
+};
+
+export type CreateRepoInput = { name: string };
+
+// =================== Health ===================
+export async function getHealth(): Promise<{ status: 'ok' }> {
+  return api('/health');
+}
+
+// =================== Repos ===================
+export async function getRepos(): Promise<Repo[]> {
+  return api('/repos');
+}
+
+export async function createRepo(input: CreateRepoInput | string): Promise<Repo> {
+  const body =
+    typeof input === 'string' ? { name: input } : { name: input.name };
+  return api('/repos', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function triggerScan(repoId: string): Promise<{ ok: boolean }> {
+  return api(`/scans/${encodeURIComponent(repoId)}`, { method: 'POST' });
+}
+
+// =================== Findings ===================
+export async function getFindings(): Promise<Finding[]> {
+  // O backend pode não enviar file/line; normalizamos aqui
+  const items = await api<Array<Partial<Finding> & { id: string }>>('/findings');
+  return items.map((f) => ({
+    id: f.id,
+    repoId: f.repoId!,
+    rule: f.rule!,
+    severity: (f.severity as Finding['severity']) || 'low',
+    createdAt: f.createdAt || new Date().toISOString(),
+    file: f.file, // pode vir undefined
+    line: typeof f.line === 'number' ? f.line : undefined,
+  }));
+}
+
+// =================== Billing (Stripe) ===================
+export async function createCheckout(
+  planCode: 'BASIC' | 'PRO' | 'ENTERPRISE'
+): Promise<{ url?: string }> {
+  return api('/billing/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ plan: planCode }),
+  });
+}
+
+export async function createPortal(): Promise<{ url?: string }> {
+  return api('/billing/portal', { method: 'POST' });
+}
+
+// =================== Auth ===================
 export async function apiLogin(email: string, password: string): Promise<{
   access_token: string;
 }> {
-  return request('/auth/login', {
+  const data = await api('/auth/login', {
     method: 'POST',
-    json: { email, password },
+    body: JSON.stringify({ email, password }),
   });
+  return data;
 }
 
 export async function apiMe(): Promise<{
   id: string;
   email: string;
-  name?: string | null;
+  name?: string;
 }> {
-  return request('/auth/me', { method: 'GET' });
+  return api('/auth/me', { method: 'GET' });
 }
 
 export async function apiUpdateProfile(payload: {
   name?: string;
   password?: string;
-}): Promise<{ success: true }> {
-  return request('/auth/profile', { method: 'PATCH', json: payload });
-}
-
-// =========================== BILLING ==========================
-export async function createCheckout(planCode: string): Promise<{
-  url?: string;
-  sessionId?: string;
-}> {
-  return request('/billing/checkout', { method: 'POST', json: { planCode } });
-}
-
-export async function createPortal(): Promise<{ url: string }> {
-  return request('/billing/portal', { method: 'POST' });
-}
-
-// =========================== HEALTH ===========================
-export async function getHealth(): Promise<{ status: string }> {
-  return request('/health', { method: 'GET' });
-}
-
-// ============================ REPOS ===========================
-export type CreateRepoInput = { name: string } | string;
-function normalizeRepoInput(input: CreateRepoInput): { name: string } {
-  return typeof input === 'string' ? { name: input } : input;
-}
-export async function getRepos(): Promise<
-  Array<{ id: string; name: string; createdAt: string }>
-> {
-  return request('/repos', { method: 'GET' });
-}
-export async function createRepo(input: CreateRepoInput): Promise<{
-  id: string;
-  name: string;
-}> {
-  return request('/repos', { method: 'POST', json: normalizeRepoInput(input) });
-}
-export async function triggerScan(repoId: string): Promise<{ ok: true }> {
-  return request(`/scans/${encodeURIComponent(repoId)}`, { method: 'POST' });
-}
-
-// =========================== FINDINGS =========================
-export async function getFindings(): Promise<
-  Array<{
-    id: string;
-    repoId: string;
-    rule: string;
-    severity: 'low' | 'medium' | 'high';
-    createdAt: string;
-  }>
-> {
-  return request('/findings', { method: 'GET' });
+}): Promise<{ ok: boolean }> {
+  return api('/auth/profile', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
 }
