@@ -18,6 +18,78 @@ Monorepo organizado com **frontend** em Next.js 15 (App Router + Tailwind) e **b
 
 ---
 ```
+devops-pipeline-auditor-std/
+├─ src/                                            ← Next.js 15 (App Router + Tailwind)
+│  ├─ app/
+│  │  ├─ (routes)/
+│  │  │  ├─ dashboard/page.tsx
+│  │  │  ├─ repositories/page.tsx                 ← CreateRepoInput ajustado
+│  │  │  ├─ findings/page.tsx
+│  │  │  └─ billing/
+│  │  │     ├─ page.tsx
+│  │  │     └─ subscriptions/page.tsx
+│  │  ├─ auth/login/page.tsx                      ← tela de login
+│  │  ├─ profile/page.tsx                         ← perfil do usuário
+│  │  ├─ layout.tsx                               ← import '../styles/globals.css'
+│  │  └─ page.tsx
+│  ├─ lib/api.ts                                  ← createCheckout/createPortal/getRepos/...
+│  ├─ styles/globals.css                          ← base + componentes utilitários
+│  ├─ tailwind.config.ts
+│  ├─ postcss.config.js
+│  ├─ next.config.mjs
+│  ├─ tsconfig.json
+│  ├─ package.json
+│  ├─ .env.example                                ← NEXT_PUBLIC_API_URL / STRIPE_PUBLIC_KEY
+│  ├─ Dockerfile
+│  └─ .dockerignore
+│
+├─ api/                                           ← NestJS + Prisma + Stripe + OTel
+│  ├─ app.module.ts
+│  ├─ main.ts                                     ← Swagger + OpenAPI + raw body Stripe
+│  ├─ auth/
+│  │  ├─ auth.module.ts
+│  │  ├─ auth.controller.ts
+│  │  ├─ auth.service.ts
+│  │  ├─ jwt.strategy.ts
+│  │  ├─ jwt.guard.ts
+│  │  └─ dto/{login.dto.ts,register.dto.ts,update-profile.dto.ts}
+│  ├─ billing/
+│  │  ├─ billing.module.ts
+│  │  ├─ billing.controller.ts
+│  │  ├─ billing.service.ts
+│  │  ├─ plan.guard.ts
+│  │  └─ plan.utils.ts
+│  ├─ common/{prisma.service.ts,health.controller.ts}
+│  ├─ repos/{repos.module.ts,repos.controller.ts,repos.service.ts}
+│  ├─ findings/{findings.module.ts,findings.controller.ts,findings.service.ts}
+│  ├─ scans/{scans.module.ts,scans.controller.ts,scans.service.ts}
+│  ├─ webhooks/{webhooks.module.ts,webhooks.controller.ts}
+│  ├─ observability/
+│  │  ├─ observability.module.ts
+│  │  ├─ observability.controller.ts              ← /observability/info
+│  │  └─ tracing.ts                               ← OTel + Prometheus (porta 9464)
+│  ├─ prisma/schema.prisma                        ← generator com ["native","linux-musl"]
+│  ├─ scripts/{seed.ts,generate-openapi.ts,stripe-seed.ts}
+│  ├─ types/{passport.d.ts,passport-jwt.d.ts}     ← d.ts locais p/ build TS
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  ├─ nest-cli.json
+│  ├─ .env.example                                ← DATABASE_URL / JWT_SECRET / STRIPE_*
+│  ├─ Dockerfile                                  ← patch binaryTargets + prisma generate
+│  └─ .dockerignore
+│
+├─ observability/
+│  ├─ prometheus/prometheus.yml                   ← scrape http://api:9464/metrics
+│  └─ grafana/provisioning/
+│     ├─ datasources/datasource.yml               ← Prometheus DS
+│     └─ dashboards/dpa-overview.json             ← latência, RPS, erros
+│
+├─ docs/{README.md,USER_MANUAL.md,DEVELOPER_GUIDE.md,STRIPE_SEED.md,AUTH.md,OPENAPI.md,openapi.yaml}
+├─ .github/workflows/{ci.yml,docker-publish.yml,deploy-coolify.yml}
+├─ docker-compose.local.yml                       ← dev: db + api + web + prometheus + grafana
+├─ docker-compose.coolify.yml                     ← prod/self-host (Coolify)
+├─ .gitignore
+└─ README.md
 
 ```
 ---
@@ -33,44 +105,6 @@ Monorepo organizado com **frontend** em Next.js 15 (App Router + Tailwind) e **b
 ## 🚀 Subir ambiente de desenvolvimento (Docker)
 
 ```
-devops-pipeline-auditor-std/
-├─ src/                                   # Next.js 15 (App Router)
-│  ├─ app/(routes)/dashboard/page.tsx
-│  ├─ app/(routes)/repositories/page.tsx      ← (ajustado p/ CreateRepoInput)
-│  ├─ app/(routes)/findings/page.tsx
-│  ├─ app/(routes)/billing/page.tsx
-│  ├─ app/(routes)/billing/subscriptions/page.tsx
-│  ├─ app/layout.tsx                          ← (import '../styles/globals.css')
-│  ├─ app/page.tsx
-│  ├─ lib/api.ts                              ← (adicionado: createCheckout, getRepos, etc.)
-│  ├─ styles/globals.css                      ← (padrão que você pediu)
-│  ├─ tailwind.config.ts
-│  ├─ postcss.config.js
-│  ├─ .env.example
-│  ├─ package.json
-│  ├─ tsconfig.json
-│  ├─ next.config.mjs
-│  └─ Dockerfile                              ← (build de produção do web)
-├─ api/                                   # NestJS + Prisma + Stripe + OTel + Swagger
-│  ├─ auth/{auth.module.ts,auth.controller.ts,auth.service.ts,jwt.strategy.ts}
-│  ├─ billing/{billing.module.ts,billing.service.ts,billing.controller.ts,plan.guard.ts,plan.utils.ts}
-│  ├─ common/{prisma.service.ts,health.controller.ts}
-│  ├─ repos/{repos.module.ts,repos.controller.ts,repos.service.ts}
-│  ├─ findings/{findings.module.ts,findings.controller.ts,findings.service.ts}
-│  ├─ scans/{scans.module.ts,scans.controller.ts,scans.service.ts}
-│  ├─ webhooks/{webhooks.module.ts,webhooks.controller.ts}
-│  ├─ observability/{observability.module.ts,tracing.ts}   ← (OTel Prometheus)
-│  ├─ prisma/schema.prisma
-│  ├─ scripts/{seed.ts,generate-openapi.ts,stripe-seed.ts}
-│  ├─ {app.module.ts, main.ts}                             ← (Swagger + /openapi.* + CORS)
-│  ├─ types/{passport.d.ts,passport-jwt.d.ts}              ← (tipos locais p/ build TS)
-│  ├─ .env.example
-│  ├─ package.json
-│  ├─ tsconfig.json
-│  ├─ nest-cli.json
-│  └─ Dockerfile
-├─ docs/{README.md,USER_MANUAL.md,DEVELOPER_GUIDE.md,STRIPE_SEED.md,AUTH.md}
-├─ .github/workflows/{ci.yml,docker-publish.yml,deploy-coolify.yml}
 ├─ docker-compose.local.yml
 ├─ docker-compose.coolify.yml
 ├─ .gitignore
