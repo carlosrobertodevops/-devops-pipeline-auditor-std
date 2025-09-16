@@ -19,6 +19,7 @@ export function clearToken() {
   _cachedToken = null;
   if (typeof window !== 'undefined') localStorage.removeItem('dpa_token');
 }
+
 function authHeaders(extra?: HeadersInit): HeadersInit {
   const t = getToken();
   return { ...(t ? { Authorization: `Bearer ${t}` } : {}), ...(extra || {}) };
@@ -39,6 +40,7 @@ async function api<T = any>(path: string, init?: RequestInit & { raw?: boolean }
 
 // =================== Tipos ===================
 export type Repo = { id: string; name: string; createdAt: string };
+
 export type Finding = {
   id: string;
   repoId: string;
@@ -48,22 +50,38 @@ export type Finding = {
   file?: string;
   line?: number;
 };
-export type CreateRepoInput = { name: string };
 
-// Planos — mantém 'ORG' para coincidir com a UI consolidada
+// 🔧 AJUSTE: aceitar opcionalmente url e provider (UI já envia isso)
+export type CreateRepoInput = {
+  name: string;
+  url?: string;
+  provider?: 'github' | 'gitlab' | 'bitbucket' | 'azure' | 'other';
+};
+
 export type PlanCode = 'BASIC' | 'PRO' | 'ENTERPRISE' | 'ORG';
 
-// Quando o backend usa Checkout Sessions, pode devolver url OU sessionId
 export type CheckoutResponse = { url?: string; sessionId?: string };
 
 // =================== Health ===================
-export async function getHealth(): Promise<{ status: 'ok' }> { return api('/health'); }
+export async function getHealth(): Promise<{ status: 'ok' }> {
+  return api('/health');
+}
 
 // =================== Repos ===================
-export async function getRepos(): Promise<Repo[]> { return api('/repos'); }
+export async function getRepos(): Promise<Repo[]> {
+  return api('/repos');
+}
 
 export async function createRepo(input: CreateRepoInput | string): Promise<Repo> {
-  const body = typeof input === 'string' ? { name: input } : { name: input.name };
+  const body =
+    typeof input === 'string'
+      ? { name: input }
+      : {
+          name: input.name,
+          ...(input.url ? { url: input.url } : {}),
+          ...(input.provider ? { provider: input.provider } : {}),
+        };
+
   return api('/repos', { method: 'POST', body: JSON.stringify(body) });
 }
 
@@ -74,7 +92,7 @@ export async function triggerScan(repoId: string): Promise<{ ok: boolean }> {
 // =================== Findings ===================
 export async function getFindings(): Promise<Finding[]> {
   const items = await api<Array<Partial<Finding> & { id: string }>>('/findings');
-  return items.map(f => ({
+  return items.map((f) => ({
     id: f.id,
     repoId: f.repoId!,
     rule: f.rule!,
@@ -90,7 +108,7 @@ export async function createCheckout(plan: PlanCode): Promise<CheckoutResponse> 
   return api('/billing/checkout', { method: 'POST', body: JSON.stringify({ plan }) });
 }
 
-// ⚠️ Aqui está o ajuste: o contrato da API garante { url: string }
+// Contrato do backend: sempre { url: string }
 export async function createPortal(): Promise<{ url: string }> {
   return api('/billing/portal', { method: 'POST' });
 }
