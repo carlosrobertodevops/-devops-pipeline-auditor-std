@@ -1,186 +1,117 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { getRepos, createRepo, triggerScan } from '@/lib/api'
-
-type Repo = {
-  id: string
-  name: string
-  url?: string | null
-  provider?: 'github' | 'gitlab' | 'bitbucket' | 'other' | null
-  createdAt?: string | null
-}
+import { useEffect, useState } from 'react'
+import { Repo, RepoProvider, getRepos, createRepo, triggerScan } from '@/lib/api'
 
 export default function RepositoriesPage() {
-  const [repos, setRepos] = useState<Repo[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
-  const [msg, setMsg] = useState<string | null>(null)
+  const [items, setItems] = useState<Repo[]>([])
+  const [err, setErr] = useState<string>()
+  const [loading, setLoading] = useState(false)
 
-  // form create
-  const [newName, setNewName] = useState<string>('')
-  const [newUrl, setNewUrl] = useState<string>('')
-  const [newProvider, setNewProvider] =
-    useState<'github' | 'gitlab' | 'bitbucket' | 'other'>('github')
+  const [name, setName] = useState('')
+  const [newProvider, setNewProvider] = useState<RepoProvider>('github')
+  const [newUrl, setNewUrl] = useState('') // opcional (não enviado p/ API atual)
 
-  const load = async () => {
+  const refresh = () => {
+    setErr(undefined)
     setLoading(true)
-    setError(null)
+    getRepos()
+      .then(setItems)
+      .catch(e => setErr(String(e)))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { refresh() }, [])
+
+  const onCreate = async () => {
+    if (!name.trim()) return
+    setLoading(true)
+    setErr(undefined)
     try {
-      const data = await getRepos()
-      setRepos(Array.isArray(data) ? data : [])
+      // API atual aceita somente { name, provider }
+      await createRepo({ name: name.trim(), provider: newProvider })
+      setName('')
+      setNewUrl('')
+      refresh()
     } catch (e: any) {
-      setError(e?.message || 'Erro ao carregar repositórios')
+      setErr(e?.message || String(e))
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    void load()
-  }, [])
-
-  const onCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setMsg(null)
-    const name = newName.trim()
-    if (!name) {
-      setError('Informe um nome para o repositório')
-      return
-    }
+  const onScan = async (id: string) => {
+    setLoading(true)
+    setErr(undefined)
     try {
-      setMsg('Criando repositório...')
-      await createRepo({
-        name,
-        url: newUrl.trim() || undefined,
-        provider: newProvider || 'github',
-      })
-      setNewName('')
-      setNewUrl('')
-      setNewProvider('github')
-      setMsg('Repositório criado!')
-      await load()
+      await triggerScan(id)
+      refresh()
     } catch (e: any) {
-      setError(e?.message || 'Erro ao criar repositório')
+      setErr(e?.message || String(e))
     } finally {
-      setTimeout(() => setMsg(null), 2000)
-    }
-  }
-
-  const onTriggerScan = async (repoId: string) => {
-    setError(null)
-    setMsg(null)
-    try {
-      setMsg('Disparando scan...')
-      await triggerScan(repoId)
-      setMsg('Scan disparado com sucesso!')
-    } catch (e: any) {
-      setError(e?.message || 'Erro ao disparar scan')
-    } finally {
-      setTimeout(() => setMsg(null), 2000)
+      setLoading(false)
     }
   }
 
   return (
-    <div className="container-app">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold m-0">Repositórios</h2>
-        <a href="/dashboard" className="nav-link">Voltar ao Dashboard</a>
+    <div className="space-y-4">
+      <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-100">
+        <h2 className="font-semibold text-lg mb-3">Novo repositório</h2>
+        <div className="grid gap-3 md:grid-cols-3">
+          <input
+            className="bg-slate-800/70 border border-slate-700 rounded-lg px-3 py-2"
+            placeholder="ex.: api-gateway"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
+          <input
+            className="bg-slate-800/70 border border-slate-700 rounded-lg px-3 py-2"
+            placeholder="https://github.com/org/repo (opcional)"
+            value={newUrl}
+            onChange={e => setNewUrl(e.target.value)}
+          />
+          <select
+            className="bg-slate-800/70 border border-slate-700 rounded-lg px-3 py-2"
+            value={newProvider}
+            onChange={e => setNewProvider(e.target.value as RepoProvider)}
+          >
+            <option value="github">GitHub</option>
+            <option value="gitlab">GitLab</option>
+            <option value="bitbucket">Bitbucket</option>
+          </select>
+        </div>
+        <div className="mt-3">
+          <button
+            onClick={onCreate}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500"
+            disabled={loading}
+          >
+            Criar
+          </button>
+        </div>
+        {err && <div className="mt-3 text-red-400">{err}</div>}
       </div>
 
-      {/* Formulário de criação */}
-      <div className="card mb-6">
-        <h3 className="font-semibold mb-3">Novo repositório</h3>
-        <form onSubmit={onCreate} className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="md:col-span-1">
-            <label className="block text-sm mb-1">Nome *</label>
-            <input
-              className="w-full rounded-lg bg-slate-900 border border-white/10 p-2"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="ex.: api-gateway"
-              required
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm mb-1">URL (opcional)</label>
-            <input
-              className="w-full rounded-lg bg-slate-900 border border-white/10 p-2"
-              value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
-              placeholder="https://github.com/org/repo"
-            />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Provider</label>
-            <select
-              className="w-full rounded-lg bg-slate-900 border border-white/10 p-2"
-              value={newProvider}
-              onChange={(e) =>
-                setNewProvider(e.target.value as 'github' | 'gitlab' | 'bitbucket' | 'other')
-              }
-            >
-              <option value="github">GitHub</option>
-              <option value="gitlab">GitLab</option>
-              <option value="bitbucket">Bitbucket</option>
-              <option value="other">Outro</option>
-            </select>
-          </div>
-          <div className="md:col-span-4">
-            <button className="btn" type="submit">Criar</button>
-          </div>
-        </form>
-      </div>
-
-      {/* Mensagens */}
-      {msg && <p className="text-emerald-400 text-sm mb-3">{msg}</p>}
-      {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
-
-      {/* Lista de repositórios */}
-      <div className="card">
-        {loading ? (
-          <p className="text-slate-300">Carregando…</p>
-        ) : repos.length === 0 ? (
-          <p className="text-slate-300">Nenhum repositório cadastrado.</p>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th className="th">Nome</th>
-                <th className="th">Provider</th>
-                <th className="th">URL</th>
-                <th className="th">Criado em</th>
-                <th className="th">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {repos.map((r) => (
-                <tr key={r.id}>
-                  <td className="td font-medium">{r.name}</td>
-                  <td className="td">{r.provider || '-'}</td>
-                  <td className="td">
-                    {r.url ? (
-                      <a className="nav-link" target="_blank" rel="noreferrer" href={r.url}>
-                        abrir
-                      </a>
-                    ) : (
-                      <span className="text-slate-400">-</span>
-                    )}
-                  </td>
-                  <td className="td">
-                    {r.createdAt ? new Date(r.createdAt).toLocaleString() : '-'}
-                  </td>
-                  <td className="td">
-                    <button className="btn" onClick={() => onTriggerScan(r.id)}>
-                      Disparar scan
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-100">
+        <h2 className="font-semibold text-lg mb-3">Repositórios</h2>
+        {loading && <div>Carregando...</div>}
+        {!loading && items.length === 0 && <div className="text-slate-400">Nenhum repositório cadastrado.</div>}
+        <ul className="space-y-2">
+          {items.map(r => (
+            <li key={r.id} className="flex items-center justify-between bg-slate-800/50 rounded-lg px-3 py-2">
+              <div>
+                <div className="font-medium">{r.name}</div>
+                <div className="text-xs text-slate-400">{r.provider}{r.url ? ` • ${r.url}` : ''}</div>
+              </div>
+              <button
+                onClick={() => onScan(r.id)}
+                className="px-3 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-500"
+              >
+                Scan
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )
