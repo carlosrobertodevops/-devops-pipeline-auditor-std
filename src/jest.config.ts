@@ -1,15 +1,15 @@
-import nextJest from 'next/jest.js'
+import nextJest from 'next/jest'
 
-// Como o projeto Next está “aninhado” em /src, apontamos para ele.
 const createJestConfig = nextJest({ dir: './' })
 
-const customConfig = {
-  testEnvironment: 'jsdom',
+const customJestConfig = {
+  testEnvironment: 'jest-environment-jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1'
+    '^@/(.*)$': '<rootDir>/$1',
   },
-  testMatch: ['**/__tests__/**/*.(test|spec).(ts|tsx)']
+  // Ajuste conforme sua base de código:
+  testMatch: ['<rootDir>/**/__tests__/**/*.(spec|test).{ts,tsx,js,jsx}'],
 }
 
-export default createJestConfig(customConfig)
+export default createJestConfig(customJestConfig)
