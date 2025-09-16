@@ -1,0 +1,47 @@
+# observability/prometheus/prometheus.yml
+# Configuração mínima para coletar métricas do Prometheus e do backend (NestJS + OpenTelemetry PrometheusExporter)
+# Suba com: docker compose -f docker-compose.local.yml up -d
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    project: devops-pipeline-auditor-std
+    env: local
+
+# Sem regras de alerta neste MVP
+rule_files: []
+
+scrape_configs:
+# Auto-scrape do próprio Prometheus (útil para saúde do serviço)
+- job_name: prometheus
+  static_configs:
+  - targets: [ "localhost:9090" ]
+    labels:
+      service: observability
+      component: prometheus
+
+# Backend API (NestJS) expondo /metrics via OpenTelemetry Prometheus Exporter
+- job_name: dpa_api_otlp
+  honor_labels: true
+  metrics_path: /metrics
+  static_configs:
+  # Preferencialmente use o nome do service no Compose ("api").
+  # Se você usa container_name diferente, pode manter as duas entradas abaixo.
+  - targets:
+    - "api:9464"
+    - "dpa_api:9464"
+    labels:
+      service: api
+      component: backend
+      language: nodejs
+      exporter: opentelemetry
+
+# (Opcional) Scrapes adicionais — habilite quando existirem:
+# - job_name: postgres_exporter
+#   static_configs:
+#     - targets: ["db-exporter:9187"]
+#       labels:
+#         service: db
+#         component: postgres
